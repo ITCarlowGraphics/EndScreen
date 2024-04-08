@@ -3,12 +3,27 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CanvasManager : MonoBehaviour
+public class CanvasUIEffects
+    : MonoBehaviour
 {
     public Sprite backgroundSprite;
     private Canvas canvas;
 
-    class ObjectToScale : MonoBehaviour
+    public static CanvasUIEffects instance;/* { get; private set; }*/
+
+    public void Awake()
+    {
+        //if (Instance == null)
+        //{
+        //    Instance = this;
+        //}
+        //else
+        //{
+        //    Destroy(gameObject);
+        //}
+    }
+
+    public class ObjectToScale : MonoBehaviour
     {
         public RectTransform rectTransform { get; set; }
         public Vector2 targetSize { get; set; }
@@ -17,17 +32,13 @@ public class CanvasManager : MonoBehaviour
         public bool isFinalSize { get; set; }
     }
 
-    List<ObjectToScale> objectsToScale = new List<ObjectToScale>();
+    public List<ObjectToScale> objectsToScale = new List<ObjectToScale>();
 
     void Start()
     {
-        CreateCanvas();
-        CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, Color.red);
-        CreateImageOnCanvas("Player", 1, Vector2.zero, 5f, 1);
-        CreateText("AndyName", "Welcome to Entropy!", 10, Color.green, Vector2.zero, 5, 1.5f);
     }
 
-    void Update()
+    public void Update()
     {
         IncreaseObjectSize();
 
@@ -40,13 +51,31 @@ public class CanvasManager : MonoBehaviour
         }
     }
 
-    void CreateCanvas()
+    public static CanvasUIEffects Instance
     {
-        canvas = new GameObject("Canvas").AddComponent<Canvas>();
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<CanvasUIEffects>();
+
+                if (instance == null)
+                {
+                    GameObject singletonObject = new GameObject("CanvasManager");
+                    instance = singletonObject.AddComponent<CanvasUIEffects>();
+                }
+            }
+            return instance;
+        }
+    }
+
+    public void CreateCanvas()
+    {
+        canvas = new GameObject("EndscreenCanvas").AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
     }
 
-    void CreateRectangleOnCanvas(Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour)
+    public void CreateRectangleOnCanvas(Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour)
     {
         GameObject backgroundRect = new GameObject("BackgroundRectangle");
         Image newRect = backgroundRect.AddComponent<Image>();
@@ -62,7 +91,7 @@ public class CanvasManager : MonoBehaviour
         rectTransform.sizeDelta = sizeDelta;
 
     }
-    void CreateImageOnCanvas(string spriteName, float startScale, Vector2 startPos, float targetScale, float scaleSpeed)
+    public void CreateImageOnCanvas(string spriteName, float startScale, Vector2 startPos, float targetScale, float scaleSpeed)
     {
         GameObject backgroundImage = new GameObject(spriteName + "Image");
         Image newImage = backgroundImage.AddComponent<Image>();
@@ -79,7 +108,7 @@ public class CanvasManager : MonoBehaviour
         CreateObjectToScale(new Vector2(targetScale, targetScale), scaleSpeed, rectTransform);
     }
 
-    void CreateText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed)
+    public void CreateText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed)
     {
         GameObject textObject = new GameObject(textName);
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
@@ -99,7 +128,7 @@ public class CanvasManager : MonoBehaviour
         CreateObjectToScale(new Vector2(targetScale, targetScale), scaleSpeed, textRectTransform);
     }
 
-    void CreateObjectToScale(Vector2 targetSize, float speed, RectTransform rectTransform)
+    public void CreateObjectToScale(Vector2 targetSize, float speed, RectTransform rectTransform)
     {
         ObjectToScale objectToScale = new ObjectToScale();
         objectToScale.isMaxSize = false;
@@ -110,7 +139,7 @@ public class CanvasManager : MonoBehaviour
         objectsToScale.Add(objectToScale);
     }
 
-    void IncreaseObjectSize()
+   public void IncreaseObjectSize()
     {
         if (objectsToScale.Count > 0)
         {
@@ -131,7 +160,7 @@ public class CanvasManager : MonoBehaviour
         }
     }
 
-    void DecreaseObjectSize(ObjectToScale temp)
+    public void DecreaseObjectSize(ObjectToScale temp)
     {
         if (objectsToScale.Count > 0)
         {
