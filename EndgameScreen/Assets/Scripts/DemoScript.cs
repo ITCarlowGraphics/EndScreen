@@ -8,14 +8,19 @@ public class DemoScript : MonoBehaviour
     void Start()
     {
 
-        CanvasUIEffects.Instance.CreateCanvas();
-        CanvasUIEffects.Instance.CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, Color.red);
-        CanvasUIEffects.Instance.CreateImageOnCanvas("Player", 50, 50, Vector2.zero, 5, 1);
-        CanvasUIEffects.Instance.CreateText("AndyName", "Super Charles!", 10, Color.green, Vector2.zero, 5, 1.5f);
+
+        Dictionary<string, string> playerInfo = new Dictionary<string, string>()
+        {
+            { "Charles", "13" },
+            { "Bald Frog", "10" },
+            { "Small Carl", "8" },
+            { "King Fisher", "4" },
+         };
+
+        CanvasUIEffects.Instance.CreateEndScreen(Color.red, Color.gray, 15, playerInfo);
     }
 
-    // Update is called once per frame
-    void Update()
+      void Update()
     {
 
     }

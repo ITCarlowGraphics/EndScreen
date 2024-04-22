@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +23,7 @@ public class CanvasUIEffects : MonoBehaviour
         public float speed { get; set; }
         public bool isMaxSize { get; set; }
         public bool isFinalSize { get; set; }
-        public float maxScale { get; set; } 
+        public float maxScale { get; set; }
     }
 
     public List<ObjectToScale> objectsToScale = new List<ObjectToScale>();
@@ -76,7 +77,24 @@ public class CanvasUIEffects : MonoBehaviour
         rectTransform.sizeDelta = sizeDelta;
     }
 
-    public void CreateImageOnCanvas(string spriteName, float width, float height, Vector2 startPos, float maxScale, float scaleSpeed)
+    public void CreateImageShapeOnCanvas(float width, float height, Vector2 startPos, float maxScale, float scaleSpeed, Color colour)
+    {
+        GameObject backgroundImage = new GameObject("Image");
+        Image newImage = backgroundImage.AddComponent<Image>();
+
+        newImage.color = colour;
+
+        backgroundImage.transform.SetParent(canvas.transform, false);
+
+        RectTransform rectTransform = newImage.GetComponent<RectTransform>();
+
+        rectTransform.sizeDelta = new Vector2(width, height);
+        rectTransform.localPosition = startPos;
+
+        CreateObjectToScale(new Vector2(width, height), maxScale, scaleSpeed, rectTransform);
+    }
+
+    public void CreateImageWithTextureOnCanvas(string spriteName, float width, float height, Vector2 startPos, float maxScale, float scaleSpeed)
     {
         GameObject backgroundImage = new GameObject(spriteName + "Image");
         Image newImage = backgroundImage.AddComponent<Image>();
@@ -103,6 +121,8 @@ public class CanvasUIEffects : MonoBehaviour
         textMeshProUGUI.fontSize = textSize;
         textMeshProUGUI.color = colour;
         textMeshProUGUI.fontStyle = FontStyles.Bold;
+        textMeshProUGUI.alignment = TextAlignmentOptions.Left;
+
 
         textObject.transform.SetParent(canvas.transform, false);
 
@@ -146,6 +166,30 @@ public class CanvasUIEffects : MonoBehaviour
                     objectsToScale[i].rectTransform.localScale += Vector3.one * Time.deltaTime * objectsToScale[i].speed;
                 }
             }
+        }
+    }
+
+    public void CreateEndScreen(Color backgroundColour, Color buttonColour, int textMaxScale, Dictionary<string, string> playerInfo)
+    {
+        Vector2[] playerPositions = new Vector2[]
+        {
+            new Vector2(0, 75),
+            new Vector2(0, 0),
+            new Vector2(0, -75),
+            new Vector2(0, -150)
+        };
+
+        string[] playerNames = playerInfo.Keys.ToArray();
+        string[] playerscores = playerInfo.Values.ToArray();
+
+        CreateCanvas();
+        CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, backgroundColour);
+
+        for (int i = 0; i < playerInfo.Count; i++)
+        {
+            CreateImageShapeOnCanvas(45, 8, playerPositions[i], 5, 1, buttonColour);
+            CreateText("Player1Name", playerNames[i], 3, Color.black, new Vector2(playerPositions[i].x, playerPositions[i].y), textMaxScale, 1.5f);
+            CreateText("Player1Score", playerscores[i], 3, Color.black, new Vector2(80, playerPositions[i].y), textMaxScale, 1.5f);
         }
     }
 }
