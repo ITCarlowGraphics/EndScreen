@@ -8,8 +8,6 @@ public class DemoScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-
         Dictionary<string, string> playerInfo = new Dictionary<string, string>()
         {
             { "Charles", "13" },
@@ -19,7 +17,6 @@ public class DemoScript : MonoBehaviour
          };
 
         // CanvasUIEffects.Instance.CreateEndScreen(Color.red, Color.gray, 15, playerInfo);
-
 
         Vector2 size = new Vector2(50, 50);
         float radius = 50.0f;
@@ -39,7 +36,7 @@ public class DemoScript : MonoBehaviour
             new Vector2(-300, -150),
         };
 
-        CanvasUIEffects.Instance.CreateObjectToMoveInCircle(size, radius, rotationSpeed, moveSpeed,  new Vector2(-500,0), list, "player");
-        CanvasUIEffects.Instance.CreateObjectToMoveInCircleWithText(size, radius, rotationSpeed, moveSpeed,  new Vector2(-500,0), list2, "player", "Hey", 15, Color.red);
+        CanvasUIEffects.Instance.CreateMovingObject(size, radius, rotationSpeed, moveSpeed,  new Vector2(-500,0), list, "player", 5);
+        CanvasUIEffects.Instance.CreateMovingObjectWithText(size, radius, rotationSpeed, moveSpeed,  new Vector2(-500,0), list2, "player", "Hey", 15, Color.red, 5);
     }
 }

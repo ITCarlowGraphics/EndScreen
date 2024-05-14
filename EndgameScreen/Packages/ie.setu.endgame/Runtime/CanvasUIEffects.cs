@@ -29,24 +29,6 @@ public class CanvasUIEffects : MonoBehaviour
         public bool isFinalSize { get; set; }
         public float maxScale { get; set; }
     }
-    public class ObjectToMoveInCircle
-    {
-        public RectTransform rectTransform { get; set; }
-        public float angle { get; set; }
-        public float radius { get; set; }
-        public float rotationSpeed { get; set; }
-        public Vector2 targetPosition { get; }
-        public Vector2 currentPosition { get; set; }
-
-        public ObjectToMoveInCircle(RectTransform rectTransform, float radius, float rotationSpeed, Vector2 startPosition)
-        {
-            this.rectTransform = rectTransform;
-            this.angle = 0f;
-            this.radius = radius;
-            this.rotationSpeed = rotationSpeed;
-            this.currentPosition = startPosition;
-        }
-    }
 
     public class ParentObjectToMoveFromPointToPoint
     {
@@ -54,7 +36,7 @@ public class CanvasUIEffects : MonoBehaviour
         public float moveSpeed { get; }
         public List<Vector2> targetPositions { get; }
         public Vector2 currentPosition { get; private set; }
-        public  int currentIndex { get; set; }
+        public int currentIndex { get; set; }
 
         public ParentObjectToMoveFromPointToPoint(RectTransform rectTransform, float moveSpeed, List<Vector2> targetPositions)
         {
@@ -75,7 +57,7 @@ public class CanvasUIEffects : MonoBehaviour
                     Vector2 direction = (nextPosition - (Vector2)rectTransform.localPosition).normalized;
                     float distance = Vector2.Distance(rectTransform.localPosition, nextPosition);
 
-                    if (distance > 1f) 
+                    if (distance > 1f)
                     {
                         rectTransform.localPosition += (Vector3)direction * moveSpeed * Time.deltaTime;
                     }
@@ -92,12 +74,32 @@ public class CanvasUIEffects : MonoBehaviour
             }
         }
 
+    }
+    public class ObjectToMoveInCircle
+    {
+        public RectTransform rectTransform { get; set; }
+        public float angle { get; set; }
+        public float radius { get; set; }
+        public float rotationSpeed { get; set; }
+        public Vector2 targetPosition { get; }
+        public Vector2 currentPosition { get; set; }
+        public float timer { get; set; }
 
+        public bool isDone = false;
+
+        public ObjectToMoveInCircle(RectTransform rectTransform, float radius, float rotationSpeed, Vector2 startPosition, float timer)
+        {
+            this.rectTransform = rectTransform;
+            this.angle = 0f;
+            this.radius = radius;
+            this.rotationSpeed = rotationSpeed;
+            this.currentPosition = startPosition;
+            this.timer = timer;
+        }
     }
 
 
     public List<ObjectToScale> objectsToScale = new List<ObjectToScale>();
-
     public List<ParentObjectToMoveFromPointToPoint> parentObjectsToMoveFromPointToPoint = new List<ParentObjectToMoveFromPointToPoint>();
     public List<ObjectToMoveInCircle> objectsToMoveInCircle = new List<ObjectToMoveInCircle>();
 
@@ -111,10 +113,11 @@ public class CanvasUIEffects : MonoBehaviour
         {
             if (parentObjectsToMoveFromPointToPoint[i].currentIndex == parentObjectsToMoveFromPointToPoint[i].targetPositions.Count)
             {
-                if (objectsToMoveInCircle[i].radius > 0)
-                { 
-                    objectsToMoveInCircle[i].radius -= 0.1f; 
-                }
+                ReduceRadiusOfMovingObject(i);
+
+                StartDeletionOfMovingObjectTimer(i);
+               
+                ReducingTransparencyOfMovingObject(i);
 
             }
         }
@@ -349,7 +352,7 @@ public class CanvasUIEffects : MonoBehaviour
     /// <param name="startPosition"></param>
     /// <param name="list"></param>
     /// <param name="spriteName"></param>
-    public void CreateObjectToMoveInCircle(Vector2 size, float radius, float rotationSpeed, float moveSpeed, Vector2 startPosition, List<Vector2> list, string spriteName)
+    public void CreateMovingObject(Vector2 size, float radius, float rotationSpeed, float moveSpeed, Vector2 startPosition, List<Vector2> list, string spriteName, float deleteTimer)
     {
         CreateCanvas();
 
@@ -372,7 +375,7 @@ public class CanvasUIEffects : MonoBehaviour
         Sprite loadedSprite = Resources.Load<Sprite>(spriteName);
         newImage.sprite = loadedSprite;
 
-        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, startPosition);
+        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, startPosition, deleteTimer);
         objectsToMoveInCircle.Add(objectToMove);
     }
     /// <summary>
@@ -388,7 +391,7 @@ public class CanvasUIEffects : MonoBehaviour
     /// <param name="textString"></param>
     /// <param name="textSize"></param>
     /// <param name="textColor"></param>
-    public void CreateObjectToMoveInCircleWithText(Vector2 size, float radius, float rotationSpeed, float moveSpeed, Vector2 startPosition, List<Vector2> list, string spriteName, string textString, float textSize, Color textColor)
+    public void CreateMovingObjectWithText(Vector2 size, float radius, float rotationSpeed, float moveSpeed, Vector2 startPosition, List<Vector2> list, string spriteName, string textString, float textSize, Color textColor, float deleteTimer)
     {
         CreateCanvas();
 
@@ -427,7 +430,7 @@ public class CanvasUIEffects : MonoBehaviour
         textRectTransform.sizeDelta = Vector2.zero;
         textRectTransform.anchoredPosition = Vector2.zero;
 
-        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, startPosition);
+        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, startPosition, deleteTimer);
         objectsToMoveInCircle.Add(objectToMove);
     }
     /// <summary>
@@ -484,6 +487,52 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    void ReduceRadiusOfMovingObject(int index)
+    {
+        if (objectsToMoveInCircle[index].radius > 0)
+        {
+            objectsToMoveInCircle[index].radius -= 0.1f;
+        }
+    }
 
+    void StartDeletionOfMovingObjectTimer(int index)
+    {
+        if (objectsToMoveInCircle[index].radius <= 0 && !objectsToMoveInCircle[index].isDone)
+        {
+            objectsToMoveInCircle[index].isDone = true;
+            StartCoroutine(DeleteMovingImage(objectsToMoveInCircle[index].timer));
+        }
+    }
+
+    void ReducingTransparencyOfMovingObject(int index)
+    {
+        if (objectsToMoveInCircle[index].isDone)
+        {
+            float alphaDecreaseRate = 1 / objectsToMoveInCircle[index].timer;
+            Image image = objectsToMoveInCircle[index].rectTransform.GetComponent<Image>();
+            TextMeshProUGUI text = objectsToMoveInCircle[index].rectTransform.GetComponentInChildren<TextMeshProUGUI>();
+            image.color = new Color(image.color.r, image.color.g, image.color.b, image.color.a - (alphaDecreaseRate * 2) * Time.deltaTime);
+
+            if (text != null)
+            {
+                text.color = new Color(text.color.r, text.color.g, text.color.b, text.color.a - (alphaDecreaseRate * 2) * Time.deltaTime);
+            }
+        }
+    }
+
+    IEnumerator DeleteMovingImage(float timer)
+    {
+        yield return new WaitForSeconds(timer);
+
+        for (int i = 0; i < objectsToMoveInCircle.Count; i++)
+        {
+            if (objectsToMoveInCircle[i].isDone)
+            {
+                Destroy(parentObjectsToMoveFromPointToPoint[i].rectTransform.gameObject);
+                parentObjectsToMoveFromPointToPoint.Remove(parentObjectsToMoveFromPointToPoint[i]);
+                objectsToMoveInCircle.Remove(objectsToMoveInCircle[i]);
+            }
+        }
+    }
 
 }
