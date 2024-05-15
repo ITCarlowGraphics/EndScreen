@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
-using static CanvasUIEffects;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class CanvasUIEffects : MonoBehaviour
 {
@@ -23,10 +20,8 @@ public class CanvasUIEffects : MonoBehaviour
     public class ObjectToScale
     {
         public RectTransform rectTransform { get; set; }
-        public Vector2 targetSize { get; set; }
         public float speed { get; set; }
         public bool isMaxSize { get; set; }
-        public bool isFinalSize { get; set; }
         public float maxScale { get; set; }
     }
 
@@ -82,19 +77,24 @@ public class CanvasUIEffects : MonoBehaviour
         public float radius { get; set; }
         public float rotationSpeed { get; set; }
         public Vector2 targetPosition { get; }
-        public Vector2 currentPosition { get; set; }
         public float timer { get; set; }
 
         public bool isDone = false;
+        public bool isScalable { get; set; }
+        public float maxScale { get; set; }
+        public float scaleSpeed { get; set; }
 
-        public ObjectToMoveInCircle(RectTransform rectTransform, float radius, float rotationSpeed, Vector2 startPosition, float timer)
+
+        public ObjectToMoveInCircle(RectTransform rectTransform, float radius, float rotationSpeed, float timer, bool isScalable, float maxScale, float scaleSpeed)
         {
             this.rectTransform = rectTransform;
             this.angle = 0f;
             this.radius = radius;
             this.rotationSpeed = rotationSpeed;
-            this.currentPosition = startPosition;
             this.timer = timer;
+            this.isScalable = isScalable;
+            this.maxScale = maxScale;
+            this.scaleSpeed = scaleSpeed;
         }
     }
 
@@ -115,8 +115,15 @@ public class CanvasUIEffects : MonoBehaviour
             {
                 ReduceRadiusOfMovingObject(i);
 
-                StartDeletionOfMovingObjectTimer(i);
-               
+                if (objectsToMoveInCircle[i].isScalable)
+                {
+                    StartDeletionOfMovingObjectTimerWithIncreasingObjectSize(i);
+                }
+                else
+                {
+                    StartDeletionOfMovingObjectTimer(i);
+                }
+
                 ReducingTransparencyOfMovingObject(i);
 
             }
@@ -141,9 +148,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
-    /// <summary>
-    ///  Creates a new EndgameScreen canvas if one doesnt already exist
-    /// </summary>
+    //  Creates a new EndgameScreen canvas if one doesnt already exist
     public void CreateCanvas()
     {
         Canvas existingCanvas = GameObject.FindObjectOfType<Canvas>();
@@ -157,95 +162,135 @@ public class CanvasUIEffects : MonoBehaviour
         canvas = new GameObject("EndscreenCanvas").AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
     }
-    /// <summary>
-    ///  Creates a background / rectangle on the canvas
-    /// </summary>
-    /// <param name="anchorMin"></param>
-    /// <param name="anchorMax"></param>
-    /// <param name="anchoredPosition"></param>
-    /// <param name="sizeDelta"></param>
-    /// <param name="colour"></param>
-    public void CreateRectangleOnCanvas(Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour)
+    public Canvas GetCanvas()
     {
+        Canvas existingCanvas = GameObject.FindObjectOfType<Canvas>();
+        if (existingCanvas != null && existingCanvas.gameObject.name == "EndscreenCanvas")
+        {
+           // Debug.LogWarning("EndscreenCanvas already exists in the scene");
+            canvas = existingCanvas;
+            return canvas;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    // Creates a background / rectangle on the canvas
+    public void CreateRectangleOnCanvas(Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour, Transform parent)
+    {
+        CreateCanvas();
+
         GameObject backgroundRect = new GameObject("BackgroundRectangle");
+
+        if (parent != null)
+        {
+            backgroundRect.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas() != null)
+            {
+                backgroundRect.transform.SetParent(GetCanvas().transform, false);
+            }
+        }
+
         Image newRect = backgroundRect.AddComponent<Image>();
 
         newRect.color = colour;
-
-        backgroundRect.transform.SetParent(canvas.transform, false);
 
         RectTransform rectTransform = newRect.GetComponent<RectTransform>();
         rectTransform.anchorMin = anchorMin;
         rectTransform.anchorMax = anchorMax;
         rectTransform.anchoredPosition = anchoredPosition;
-        rectTransform.sizeDelta = sizeDelta;
+
+        if (sizeDelta == Vector2.zero)
+        {
+            Canvas canvas = GetCanvas();
+
+            if (canvas != null)
+            {
+                rectTransform.sizeDelta = canvas.GetComponent<RectTransform>().sizeDelta;
+            }
+            else
+            {
+                rectTransform.sizeDelta = Vector2.zero; 
+            }
+        }
+        else
+        {
+            rectTransform.sizeDelta = sizeDelta;
+        }
     }
 
-    /// <summary>
-    ///  Creates a blank image on the canvas
-    /// </summary>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="startPos"></param>
-    /// <param name="maxScale"></param>
-    /// <param name="scaleSpeed"></param>
-    /// <param name="colour"></param>
-    public void CreateImageShapeOnCanvas(float width, float height, Vector2 startPos, float maxScale, float scaleSpeed, Color colour)
+    // Creates a blank image on the canvas
+    public void CreateImageOnCanvas(Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Color colour, Transform parent)
     {
+        CreateCanvas();
+
         GameObject backgroundImage = new GameObject("Image");
+        backgroundImage.transform.SetParent(parent, false);
         Image newImage = backgroundImage.AddComponent<Image>();
 
         newImage.color = colour;
 
-        backgroundImage.transform.SetParent(canvas.transform, false);
+        if(parent != null)
+        {
+            backgroundImage.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas() != null)
+            {
+                backgroundImage.transform.SetParent(GetCanvas().transform, false);
+            }
+        }
+
 
         RectTransform rectTransform = newImage.GetComponent<RectTransform>();
 
-        rectTransform.sizeDelta = new Vector2(width, height);
+        rectTransform.sizeDelta = size;
         rectTransform.localPosition = startPos;
 
-        CreateObjectToScale(new Vector2(width, height), maxScale, scaleSpeed, rectTransform);
+        CreateObjectToScale(maxScale, scaleSpeed, rectTransform);
     }
 
-    /// <summary>
-    ///  Creates an image with a texture on the canvas
-    /// </summary>
-    /// <param name="spriteName"></param>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="startPos"></param>
-    /// <param name="maxScale"></param>
-    /// <param name="scaleSpeed"></param>
-    public void CreateImageWithTextureOnCanvas(string spriteName, float width, float height, Vector2 startPos, float maxScale, float scaleSpeed)
+    // Creates an image with a texture on the canvas
+    public void CreateImageWithTextureOnCanvas(string spriteName, Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Transform parent)
     {
+        CreateCanvas();
+
         GameObject backgroundImage = new GameObject(spriteName + "Image");
         Image newImage = backgroundImage.AddComponent<Image>();
         Sprite loadedSprite = Resources.Load<Sprite>(spriteName);
 
         newImage.sprite = loadedSprite;
 
-        backgroundImage.transform.SetParent(canvas.transform, false);
-
+        if (parent != null)
+        {
+            backgroundImage.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas() != null)
+            {
+                backgroundImage.transform.SetParent(GetCanvas().transform, false);
+            }
+        }
         RectTransform rectTransform = newImage.GetComponent<RectTransform>();
 
-        rectTransform.sizeDelta = new Vector2(width, height);
+        rectTransform.sizeDelta = size;
         rectTransform.localPosition = startPos;
 
-        CreateObjectToScale(new Vector2(width, height), maxScale, scaleSpeed, rectTransform);
+        CreateObjectToScale(maxScale, scaleSpeed, rectTransform);
     }
 
-    /// <summary>
-    /// Creates text that scales on the canvas
-    /// </summary>
-    /// <param name="textName"></param>
-    /// <param name="textString"></param>
-    /// <param name="textSize"></param>
-    /// <param name="colour"></param>
-    /// <param name="startPos"></param>
-    /// <param name="targetScale"></param>
-    /// <param name="scaleSpeed"></param>
-    public void CreateScalableText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed)
+    // Creates text that scales on the canvas
+    public void CreateScalableText(string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
     {
+        CreateCanvas();
+
         GameObject textObject = new GameObject(textName);
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
 
@@ -255,39 +300,38 @@ public class CanvasUIEffects : MonoBehaviour
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
 
-
-        textObject.transform.SetParent(canvas.transform, false);
+        if (parent != null)
+        {
+            textObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas() != null)
+            {
+                textObject.transform.SetParent(GetCanvas().transform, false);
+            }
+        }
 
         RectTransform textRectTransform = textMeshProUGUI.GetComponent<RectTransform>();
         textRectTransform.sizeDelta = new Vector2(textMeshProUGUI.preferredWidth, textSize);
         textRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
 
-        CreateObjectToScale(new Vector2(targetScale, targetScale), targetScale, scaleSpeed, textRectTransform);
+        CreateObjectToScale(targetScale, scaleSpeed, textRectTransform);
     }
 
-    /// <summary>
-    /// Creates object that scales on the canvas
-    /// </summary>
-    /// <param name="targetSize"></param>
-    /// <param name="maxScale"></param>
-    /// <param name="speed"></param>
-    /// <param name="rectTransform"></param>
-    public void CreateObjectToScale(Vector2 targetSize, float maxScale, float speed, RectTransform rectTransform)
+    // Creates object that scales on the canvas
+    public void CreateObjectToScale(float maxScale, float speed, RectTransform rectTransform)
     {
         ObjectToScale objectToScale = new ObjectToScale();
         objectToScale.isMaxSize = false;
-        objectToScale.isFinalSize = false;
-        objectToScale.targetSize = targetSize;
         objectToScale.maxScale = maxScale;
         objectToScale.speed = speed;
         objectToScale.rectTransform = rectTransform;
         objectsToScale.Add(objectToScale);
     }
 
-    /// <summary>
-    /// Function for increasing object size
-    /// </summary>
-    public void IncreaseObjectSize()
+    // Function for increasing object size
+    void IncreaseObjectSize()
     {
         if (objectsToScale.Count > 0)
         {
@@ -295,8 +339,9 @@ public class CanvasUIEffects : MonoBehaviour
             {
                 if (objectsToScale[i].isMaxSize)
                 {
-                    return;
+                    continue;
                 }
+               
 
                 if (objectsToScale[i].rectTransform.localScale.x >= objectsToScale[i].maxScale)
                 {
@@ -311,60 +356,35 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    //
+    // Moving Object
+    //
 
-    /// <summary>
-    /// Creates entire end game screen
-    /// </summary>
-    /// <param name="backgroundColour"></param>
-    /// <param name="buttonColour"></param>
-    /// <param name="textMaxScale"></param>
-    /// <param name="playerInfo"></param>
-    public void CreateEndScreen(Color backgroundColour, Color buttonColour, int textMaxScale, Dictionary<string, string> playerInfo)
-    {
-        Vector2[] playerPositions = new Vector2[]
-        {
-            new Vector2(0, 75),
-            new Vector2(0, 0),
-            new Vector2(0, -75),
-            new Vector2(0, -150)
-        };
-
-        string[] playerNames = playerInfo.Keys.ToArray();
-        string[] playerscores = playerInfo.Values.ToArray();
-
-        CreateCanvas();
-        CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, backgroundColour);
-
-        for (int i = 0; i < playerInfo.Count; i++)
-        {
-            CreateImageShapeOnCanvas(45, 8, playerPositions[i], 5, 1, buttonColour);
-            CreateScalableText("Player" + i.ToString() + "Name", playerNames[i], 3, Color.black, new Vector2(playerPositions[i].x, playerPositions[i].y), textMaxScale, 1.5f);
-            CreateScalableText("Player" + i.ToString() + "Score", playerscores[i], 3, Color.black, new Vector2(80, playerPositions[i].y), textMaxScale, 1.5f);
-        }
-    }
-    /// <summary>
-    /// Creates object that moves in a circle around a set point
-    /// </summary>
-    /// <param name="size"></param>
-    /// <param name="radius"></param>
-    /// <param name="rotationSpeed"></param>
-    /// <param name="moveSpeed"></param>
-    /// <param name="startPosition"></param>
-    /// <param name="list"></param>
-    /// <param name="spriteName"></param>
-    public void CreateMovingObject(Vector2 size, float radius, float rotationSpeed, float moveSpeed, Vector2 startPosition, List<Vector2> list, string spriteName, float deleteTimer)
+    // Creates object that moves in a circle around a set point
+    public void CreateMovingObject(Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, string spriteName, float deleteTimer, Transform parent, 
+                                    bool scaleObject, float maxScale, float scaleSpeed)
     {
         CreateCanvas();
 
         GameObject parentObj = new GameObject("MovingParent");
         RectTransform parentRectTransform = parentObj.AddComponent<RectTransform>();
-        parentObj.transform.SetParent(canvas.transform, false);
+        if (parent != null)
+        {
+            parentObj.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas() != null)
+            {
+                parentObj.transform.SetParent(GetCanvas().transform, false);
+            }
+        }
 
         ParentObjectToMoveFromPointToPoint parentObjectToMove = new ParentObjectToMoveFromPointToPoint(parentRectTransform, moveSpeed, list);
         parentObjectToMove.rectTransform.localPosition = parentObjectToMove.currentPosition;
         parentObjectsToMoveFromPointToPoint.Add(parentObjectToMove);
 
-        GameObject movingImage = new GameObject("MovingImage");
+        GameObject movingImage = new GameObject("MovingObject");
         movingImage.transform.SetParent(parentObj.transform, false);
 
         Image newImage = movingImage.AddComponent<Image>();
@@ -375,35 +395,35 @@ public class CanvasUIEffects : MonoBehaviour
         Sprite loadedSprite = Resources.Load<Sprite>(spriteName);
         newImage.sprite = loadedSprite;
 
-        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, startPosition, deleteTimer);
+        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, deleteTimer, scaleObject, maxScale, scaleSpeed);
         objectsToMoveInCircle.Add(objectToMove);
     }
-    /// <summary>
-    /// Creates object that moves in a circle around a set point with text
-    /// </summary>
-    /// <param name="size"></param>
-    /// <param name="radius"></param>
-    /// <param name="rotationSpeed"></param>
-    /// <param name="moveSpeed"></param>
-    /// <param name="startPosition"></param>
-    /// <param name="list"></param>
-    /// <param name="spriteName"></param>
-    /// <param name="textString"></param>
-    /// <param name="textSize"></param>
-    /// <param name="textColor"></param>
-    public void CreateMovingObjectWithText(Vector2 size, float radius, float rotationSpeed, float moveSpeed, Vector2 startPosition, List<Vector2> list, string spriteName, string textString, float textSize, Color textColor, float deleteTimer)
+
+    // Creates object that moves in a circle around a set point with text
+    public void CreateMovingObjectWithText(Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, 
+        string spriteName, string textString, float textSize, Color textColor, float deleteTimer, Transform parent, bool scaleObject, float maxScale, float scaleSpeed)
     {
         CreateCanvas();
 
         GameObject parentObj = new GameObject("MovingParent");
         RectTransform parentRectTransform = parentObj.AddComponent<RectTransform>();
-        parentObj.transform.SetParent(canvas.transform, false);
-      
+        if (parent != null)
+        {
+            parentObj.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas() != null)
+            {
+                parentObj.transform.SetParent(GetCanvas().transform, false);
+            }
+        }
+
         ParentObjectToMoveFromPointToPoint parentObjectToMove = new ParentObjectToMoveFromPointToPoint(parentRectTransform, moveSpeed, list);
         parentObjectToMove.rectTransform.localPosition = parentObjectToMove.currentPosition;
         parentObjectsToMoveFromPointToPoint.Add(parentObjectToMove);
 
-        GameObject movingImage = new GameObject("MovingImage");
+        GameObject movingImage = new GameObject("MovingObject");
         movingImage.transform.SetParent(parentObj.transform, false);
 
         Image newImage = movingImage.AddComponent<Image>();
@@ -430,36 +450,12 @@ public class CanvasUIEffects : MonoBehaviour
         textRectTransform.sizeDelta = Vector2.zero;
         textRectTransform.anchoredPosition = Vector2.zero;
 
-        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, startPosition, deleteTimer);
+        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(rectTransform, radius, rotationSpeed, deleteTimer, scaleObject, maxScale, scaleSpeed);
         objectsToMoveInCircle.Add(objectToMove);
     }
-    /// <summary>
-    /// Function for moving the object in a circle
-    /// </summary>
-    public void MoveObjectsInCircle()
-    {
-        foreach (var obj in objectsToMoveInCircle)
-        {
-            float x = Mathf.Cos(obj.angle) * obj.radius;
-            float y = Mathf.Sin(obj.angle) * obj.radius;
-            Vector2 newPos = new Vector2(x, y);
 
-            obj.rectTransform.localPosition = newPos;
-
-            obj.angle += Time.deltaTime * obj.rotationSpeed;
-        }
-    }
-    /// <summary>
-    /// Creates text that goes with the moving object
-    /// </summary>
-    /// <param name="textName"></param>
-    /// <param name="textString"></param>
-    /// <param name="textSize"></param>
-    /// <param name="colour"></param>
-    /// <param name="startPos"></param>
-    /// <param name="targetScale"></param>
-    /// <param name="scaleSpeed"></param>
-    public void CreateCircularMovingText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed)
+    // Creates text that goes with the moving object
+    public void CreateCircularMovingText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
     {
         GameObject textObject = new GameObject(textName);
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
@@ -477,9 +473,25 @@ public class CanvasUIEffects : MonoBehaviour
         textRectTransform.sizeDelta = new Vector2(textMeshProUGUI.preferredWidth, textSize);
         textRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
 
-        CreateObjectToScale(new Vector2(targetScale, targetScale), targetScale, scaleSpeed, textRectTransform);
+        CreateObjectToScale(targetScale, scaleSpeed, textRectTransform);
     }
-    public void MoveParentObjectsToNextPoint()
+
+    // Function for moving the object in a circle
+    void MoveObjectsInCircle()
+    {
+        foreach (var obj in objectsToMoveInCircle)
+        {
+            float x = Mathf.Cos(obj.angle) * obj.radius;
+            float y = Mathf.Sin(obj.angle) * obj.radius;
+            Vector2 newPos = new Vector2(x, y);
+
+            obj.rectTransform.localPosition = newPos;
+
+            obj.angle += Time.deltaTime * obj.rotationSpeed;
+        }
+    }
+
+    void MoveParentObjectsToNextPoint()
     {
         foreach (var parentObject in parentObjectsToMoveFromPointToPoint)
         {
@@ -487,6 +499,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    //
     void ReduceRadiusOfMovingObject(int index)
     {
         if (objectsToMoveInCircle[index].radius > 0)
@@ -495,6 +508,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    //
     void StartDeletionOfMovingObjectTimer(int index)
     {
         if (objectsToMoveInCircle[index].radius <= 0 && !objectsToMoveInCircle[index].isDone)
@@ -503,7 +517,18 @@ public class CanvasUIEffects : MonoBehaviour
             StartCoroutine(DeleteMovingImage(objectsToMoveInCircle[index].timer));
         }
     }
-
+    //
+    void StartDeletionOfMovingObjectTimerWithIncreasingObjectSize(int index)
+    {
+        if (objectsToMoveInCircle[index].radius <= 0 && !objectsToMoveInCircle[index].isDone)
+        {
+            objectsToMoveInCircle[index].isDone = true;
+            CreateObjectToScale(objectsToMoveInCircle[index].maxScale, objectsToMoveInCircle[index].scaleSpeed, objectsToMoveInCircle[index].rectTransform);
+            StartCoroutine(DeleteMovingImage(objectsToMoveInCircle[index].timer));
+        }
+    }
+    
+    //
     void ReducingTransparencyOfMovingObject(int index)
     {
         if (objectsToMoveInCircle[index].isDone)
@@ -519,7 +544,8 @@ public class CanvasUIEffects : MonoBehaviour
             }
         }
     }
-
+    
+    //
     IEnumerator DeleteMovingImage(float timer)
     {
         yield return new WaitForSeconds(timer);
@@ -535,4 +561,95 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    //
+    public void DeleteEndScreenCanvas()
+    {
+        GameObject existingCanvas = GameObject.Find("EndscreenCanvas");
+        if (existingCanvas != null && existingCanvas.gameObject.name == "EndscreenCanvas")
+        {
+            Destroy(existingCanvas);
+            objectsToScale.Clear();
+            parentObjectsToMoveFromPointToPoint.Clear();
+            objectsToMoveInCircle.Clear();
+        }
+    }
+
+    // Creates entire end game screen
+    public void CreateEndScreen(Color backgroundColour,
+        Color playerBackgroundColour,
+        Vector2 playerBackgroundSize,
+        List<Vector2> playerPositions,
+        float playerBackgroundMaxScale,
+        float scaleSpeed,
+        float nameTextOffsetX,
+        float scoreTextOffsetX,
+        float textSize,
+        float textMaxScale,
+        Color textColour,
+        Dictionary<string, string> playerInfo,
+        Vector2 movingObjectSize,
+        float movingObjectRadius,
+        float movingObjectRotationSpeed,
+        float movingObjectMoveSpeed,
+        List<Vector2> movingObjectPositions,
+        string movingObjectSpriteTextureString,
+        string movingObjectTextString,
+        float movingObjectTextSize,
+        Color movingObjectTextColour,
+        float movingObjectDeletionTimer,
+        bool canMovingObjectScale,
+        float movingObjectMaxScale,
+        float movingObjectScaleSpeed)
+
+    {
+
+        string[] playerNames = playerInfo.Keys.ToArray();
+        string[] playerscores = playerInfo.Values.ToArray();
+
+
+        CreateCanvas();
+
+        GameObject leaderboard = new GameObject("Leaderboard");
+
+        if (GetCanvas().transform != null)
+        {
+            leaderboard.transform.SetParent(GetCanvas().transform, false);
+        }
+
+        CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, backgroundColour, leaderboard.transform);
+
+        for (int i = 0; i < playerInfo.Count; i++)
+        {
+            Vector2 newPlayerBackgroundSize = new Vector2(playerBackgroundSize.x - (i * 1.5f), playerBackgroundSize.y - (i * 1.2f));
+            float textScaleFactor = textSize - (i * 0.3f);
+
+            CreateImageOnCanvas(newPlayerBackgroundSize,
+                playerPositions[i],
+                playerBackgroundMaxScale,
+                scaleSpeed,
+                playerBackgroundColour,
+                leaderboard.transform);
+            CreateScalableText("Player" + i.ToString() + "Name",
+                playerNames[i],
+                textScaleFactor,
+                textColour,
+                new Vector2(playerPositions[i].x + nameTextOffsetX, playerPositions[i].y),
+                textMaxScale,
+                scaleSpeed * 1.5f,
+                leaderboard.transform);
+
+            CreateScalableText("Player" + i.ToString() + "Score",
+                playerscores[i],
+                textScaleFactor,
+                textColour,
+                new Vector2(80 + scoreTextOffsetX, playerPositions[i].y),
+                textMaxScale,
+                scaleSpeed * 1.5f,
+                leaderboard.transform);
+        }
+
+        CreateMovingObjectWithText(movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, movingObjectPositions, movingObjectSpriteTextureString,
+                                    movingObjectTextString, movingObjectTextSize, movingObjectTextColour, movingObjectDeletionTimer, 
+                                    leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
+    }
 }
