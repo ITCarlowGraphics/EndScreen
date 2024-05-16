@@ -17,6 +17,7 @@ public class CanvasUIEffects : MonoBehaviour
         instance = this;
     }
 
+    // Feature #3, Task ID #8
     public class ObjectToScale
     {
         public RectTransform rectTransform { get; set; }
@@ -25,6 +26,7 @@ public class CanvasUIEffects : MonoBehaviour
         public float maxScale { get; set; }
     }
 
+    // Feature #4, Task ID #17
     public class ParentObjectToMoveFromPointToPoint
     {
         public RectTransform rectTransform { get; }
@@ -42,6 +44,7 @@ public class CanvasUIEffects : MonoBehaviour
             this.currentIndex = 0;
         }
 
+        // Feature #4, Task ID #18
         public void MoveToNextPoint()
         {
             if (currentIndex < targetPositions.Count)
@@ -70,6 +73,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
 
     }
+    // Feature #4, Task ID #16
     public class ObjectToMoveInCircle
     {
         public RectTransform rectTransform { get; set; }
@@ -83,7 +87,6 @@ public class CanvasUIEffects : MonoBehaviour
         public bool isScalable { get; set; }
         public float maxScale { get; set; }
         public float scaleSpeed { get; set; }
-
 
         public ObjectToMoveInCircle(RectTransform rectTransform, float radius, float rotationSpeed, float timer, bool isScalable, float maxScale, float scaleSpeed)
         {
@@ -130,6 +133,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    // Feature #1, Task ID #39
     public static CanvasUIEffects Instance
     {
         get
@@ -140,7 +144,7 @@ public class CanvasUIEffects : MonoBehaviour
 
                 if (instance == null)
                 {
-                    GameObject singletonObject = new GameObject("CanvasManager");
+                    GameObject singletonObject = new GameObject("CanvasUIEffectsManager");
                     instance = singletonObject.AddComponent<CanvasUIEffects>();
                 }
             }
@@ -148,7 +152,8 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
-    //  Creates a new EndgameScreen canvas if one doesnt already exist
+    // Creates a new EndgameScreen canvas if one doesnt already exist
+    // Feature #1, Task ID #5
     public void CreateCanvas()
     {
         Canvas existingCanvas = GameObject.FindObjectOfType<Canvas>();
@@ -162,6 +167,8 @@ public class CanvasUIEffects : MonoBehaviour
         canvas = new GameObject("EndscreenCanvas").AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
     }
+
+    // Feature #1, Task ID #6
     public Canvas GetCanvas()
     {
         Canvas existingCanvas = GameObject.FindObjectOfType<Canvas>();
@@ -178,6 +185,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates a background / rectangle on the canvas
+    // Feature #2, Task ID #10
     public void CreateRectangleOnCanvas(Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour, Transform parent)
     {
         CreateCanvas();
@@ -225,6 +233,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates a blank image on the canvas
+    // Feature #3, Task ID #24
     public void CreateImageOnCanvas(Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Color colour, Transform parent)
     {
         CreateCanvas();
@@ -257,6 +266,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates an image with a texture on the canvas
+    // Feature #3, Task ID #25
     public void CreateImageWithTextureOnCanvas(string spriteName, Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Transform parent)
     {
         CreateCanvas();
@@ -287,6 +297,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates text that scales on the canvas
+    // Feature #1, Task ID #15
     public void CreateScalableText(string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
     {
         CreateCanvas();
@@ -320,6 +331,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates object that scales on the canvas
+    // Feature #1, Task ID #11
     public void CreateObjectToScale(float maxScale, float speed, RectTransform rectTransform)
     {
         ObjectToScale objectToScale = new ObjectToScale();
@@ -331,6 +343,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Function for increasing object size
+    // Feature #1, Task ID #12
     void IncreaseObjectSize()
     {
         if (objectsToScale.Count > 0)
@@ -361,6 +374,7 @@ public class CanvasUIEffects : MonoBehaviour
     //
 
     // Creates object that moves in a circle around a set point
+    // Feature #4, Task ID #20
     public void CreateMovingObject(Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, string spriteName, float deleteTimer, Transform parent, 
                                     bool scaleObject, float maxScale, float scaleSpeed)
     {
@@ -400,6 +414,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates object that moves in a circle around a set point with text
+    // Feature #4, Task ID #21
     public void CreateMovingObjectWithText(Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, 
         string spriteName, string textString, float textSize, Color textColor, float deleteTimer, Transform parent, bool scaleObject, float maxScale, float scaleSpeed)
     {
@@ -455,6 +470,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Creates text that goes with the moving object
+    // Feature #4, Task ID #22
     public void CreateCircularMovingText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
     {
         GameObject textObject = new GameObject(textName);
@@ -477,6 +493,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Function for moving the object in a circle
+    // Feature #4, Task ID #23
     void MoveObjectsInCircle()
     {
         foreach (var obj in objectsToMoveInCircle)
@@ -491,6 +508,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    // Feature #4, Task ID #19
     void MoveParentObjectsToNextPoint()
     {
         foreach (var parentObject in parentObjectsToMoveFromPointToPoint)
@@ -499,7 +517,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
-    //
+    // Feature #4, Task ID #26
     void ReduceRadiusOfMovingObject(int index)
     {
         if (objectsToMoveInCircle[index].radius > 0)
@@ -508,7 +526,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
-    //
+    // Feature #4, Task ID #27
     void StartDeletionOfMovingObjectTimer(int index)
     {
         if (objectsToMoveInCircle[index].radius <= 0 && !objectsToMoveInCircle[index].isDone)
@@ -517,7 +535,8 @@ public class CanvasUIEffects : MonoBehaviour
             StartCoroutine(DeleteMovingImage(objectsToMoveInCircle[index].timer));
         }
     }
-    //
+
+    // Feature #4, Task ID #28
     void StartDeletionOfMovingObjectTimerWithIncreasingObjectSize(int index)
     {
         if (objectsToMoveInCircle[index].radius <= 0 && !objectsToMoveInCircle[index].isDone)
@@ -527,8 +546,8 @@ public class CanvasUIEffects : MonoBehaviour
             StartCoroutine(DeleteMovingImage(objectsToMoveInCircle[index].timer));
         }
     }
-    
-    //
+
+    // Feature #4, Task ID #29
     void ReducingTransparencyOfMovingObject(int index)
     {
         if (objectsToMoveInCircle[index].isDone)
@@ -544,8 +563,8 @@ public class CanvasUIEffects : MonoBehaviour
             }
         }
     }
-    
-    //
+
+    // Feature #4, Task ID #30
     IEnumerator DeleteMovingImage(float timer)
     {
         yield return new WaitForSeconds(timer);
@@ -561,7 +580,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
-    //
+    // Feature #1, Task ID #7
     public void DeleteEndScreenCanvas()
     {
         GameObject existingCanvas = GameObject.Find("EndscreenCanvas");
@@ -616,6 +635,7 @@ public class CanvasUIEffects : MonoBehaviour
             leaderboard.transform.SetParent(GetCanvas().transform, false);
         }
 
+        // Feature #5, Task ID #32
         CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, backgroundColour, leaderboard.transform);
 
         for (int i = 0; i < playerInfo.Count; i++)
@@ -623,12 +643,15 @@ public class CanvasUIEffects : MonoBehaviour
             Vector2 newPlayerBackgroundSize = new Vector2(playerBackgroundSize.x - (i * 1.5f), playerBackgroundSize.y - (i * 1.2f));
             float textScaleFactor = textSize - (i * 0.3f);
 
+            // Feature #5, Task ID #33
             CreateImageOnCanvas(newPlayerBackgroundSize,
                 playerPositions[i],
                 playerBackgroundMaxScale,
                 scaleSpeed,
                 playerBackgroundColour,
                 leaderboard.transform);
+
+            // Feature #5, Task ID #34
             CreateScalableText("Player" + i.ToString() + "Name",
                 playerNames[i],
                 textScaleFactor,
@@ -638,6 +661,7 @@ public class CanvasUIEffects : MonoBehaviour
                 scaleSpeed * 1.5f,
                 leaderboard.transform);
 
+            // Feature #5, Task ID #35
             CreateScalableText("Player" + i.ToString() + "Score",
                 playerscores[i],
                 textScaleFactor,
@@ -648,6 +672,7 @@ public class CanvasUIEffects : MonoBehaviour
                 leaderboard.transform);
         }
 
+        // Feature #5, Task ID #36
         CreateMovingObjectWithText(movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, movingObjectPositions, movingObjectSpriteTextureString,
                                     movingObjectTextString, movingObjectTextSize, movingObjectTextColour, movingObjectDeletionTimer, 
                                     leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);

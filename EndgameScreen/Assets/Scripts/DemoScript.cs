@@ -8,16 +8,6 @@ using UnityEngine.SocialPlatforms.Impl;
 
 public class DemoScript : MonoBehaviour
 {
-    void Start()
-    {
-
-    }
-
-    private void Update()
-    {
-
-    }
-
     public void CreateCanvas()
     {
         CanvasUIEffects.Instance.CreateCanvas();
