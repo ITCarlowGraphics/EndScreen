@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 public class CanvasUIEffects : MonoBehaviour
 {
-    public Sprite backgroundSprite;
     private Canvas canvas;
 
     public static CanvasUIEffects instance;
@@ -355,15 +354,17 @@ public class CanvasUIEffects : MonoBehaviour
                     continue;
                 }
                
-
-                if (objectsToScale[i].rectTransform.localScale.x >= objectsToScale[i].maxScale)
-                {
-                    objectsToScale[i].isMaxSize = true;
-                    objectsToScale[i].rectTransform.localScale = new Vector3(objectsToScale[i].maxScale, objectsToScale[i].maxScale, 1f);
-                }
-                else
-                {
-                    objectsToScale[i].rectTransform.localScale += Vector3.one * Time.deltaTime * objectsToScale[i].speed;
+                if(objectsToScale[i].rectTransform != null)
+                {  
+                    if (objectsToScale[i].rectTransform.localScale.x >= objectsToScale[i].maxScale)
+                    {
+                        objectsToScale[i].isMaxSize = true;
+                        objectsToScale[i].rectTransform.localScale = new Vector3(objectsToScale[i].maxScale, objectsToScale[i].maxScale, 1f);
+                    }
+                    else
+                    {
+                        objectsToScale[i].rectTransform.localScale += Vector3.one * Time.deltaTime * objectsToScale[i].speed;
+                    }
                 }
             }
         }
@@ -597,7 +598,8 @@ public class CanvasUIEffects : MonoBehaviour
     public void CreateEndScreen(Color backgroundColour,
         Color playerBackgroundColour,
         Vector2 playerBackgroundSize,
-        List<Vector2> playerPositions,
+        Vector2 topOfLeaderBoardPosition,
+        float spaceInBetweenPlayerBackgrounds,
         float playerBackgroundMaxScale,
         float scaleSpeed,
         float nameTextOffsetX,
@@ -623,7 +625,7 @@ public class CanvasUIEffects : MonoBehaviour
     {
 
         string[] playerNames = playerInfo.Keys.ToArray();
-        string[] playerscores = playerInfo.Values.ToArray();
+        string[] playerScores = playerInfo.Values.ToArray();
 
 
         CreateCanvas();
@@ -638,38 +640,54 @@ public class CanvasUIEffects : MonoBehaviour
         // Feature #5, Task ID #32
         CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, backgroundColour, leaderboard.transform);
 
+        Vector2 currentPos = topOfLeaderBoardPosition;
+
         for (int i = 0; i < playerInfo.Count; i++)
         {
-            Vector2 newPlayerBackgroundSize = new Vector2(playerBackgroundSize.x - (i * 1.5f), playerBackgroundSize.y - (i * 1.2f));
-            float textScaleFactor = textSize - (i * 0.3f);
+            float scaleFactor = 1f - (i * 0.10f);
+
+            Vector2 newPlayerBackgroundSize = new Vector2(playerBackgroundSize.x * scaleFactor, playerBackgroundSize.y * scaleFactor);
+
+            float textScaleFactor = 1f - (i * 0.15f);
+            float newTextSize = textSize * textScaleFactor;
+
+
+            if (i > 0)
+            {
+                currentPos.y -= (newPlayerBackgroundSize.y * playerBackgroundMaxScale) + spaceInBetweenPlayerBackgrounds;
+            }
 
             // Feature #5, Task ID #33
             CreateImageOnCanvas(newPlayerBackgroundSize,
-                playerPositions[i],
+                currentPos,
                 playerBackgroundMaxScale,
                 scaleSpeed,
                 playerBackgroundColour,
                 leaderboard.transform);
 
             // Feature #5, Task ID #34
-            CreateScalableText("Player" + i.ToString() + "Name",
+            CreateScalableText("Player" + (i + 1).ToString() + "Name",
                 playerNames[i],
-                textScaleFactor,
+                newTextSize,
                 textColour,
-                new Vector2(playerPositions[i].x + nameTextOffsetX, playerPositions[i].y),
+               new Vector2(currentPos.x + nameTextOffsetX, currentPos.y),
                 textMaxScale,
                 scaleSpeed * 1.5f,
                 leaderboard.transform);
 
+            float rightSideX = currentPos.x + (newPlayerBackgroundSize.x * playerBackgroundMaxScale);
+            float scoreTextX = rightSideX - (newPlayerBackgroundSize.x * playerBackgroundMaxScale * 0.20f);
+            scoreTextX *= 0.5f;
+
             // Feature #5, Task ID #35
-            CreateScalableText("Player" + i.ToString() + "Score",
-                playerscores[i],
-                textScaleFactor,
-                textColour,
-                new Vector2(80 + scoreTextOffsetX, playerPositions[i].y),
-                textMaxScale,
-                scaleSpeed * 1.5f,
-                leaderboard.transform);
+            CreateScalableText("Player" + (i + 1).ToString() + "Score",
+                    playerScores[i],
+                    newTextSize ,
+                    textColour,
+                    new Vector2(scoreTextX + scoreTextOffsetX, currentPos.y),
+                    textMaxScale,
+                    scaleSpeed * 1.5f,
+                    leaderboard.transform);
         }
 
         // Feature #5, Task ID #36
