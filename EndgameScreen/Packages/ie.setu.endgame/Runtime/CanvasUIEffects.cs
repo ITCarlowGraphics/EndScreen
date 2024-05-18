@@ -1,15 +1,19 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+//using System.Numerics;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
+using static CanvasUIEffects;
 
 public class CanvasUIEffects : MonoBehaviour
 {
     private Canvas canvas;
 
-    public static CanvasUIEffects instance;
+    static CanvasUIEffects instance;
 
     public void Awake()
     {
@@ -41,6 +45,7 @@ public class CanvasUIEffects : MonoBehaviour
             this.targetPositions = targetPositions;
             this.currentPosition = targetPositions[0];
             this.currentIndex = 0;
+
         }
 
         // Feature #4, Task ID #18
@@ -99,17 +104,158 @@ public class CanvasUIEffects : MonoBehaviour
             this.scaleSpeed = scaleSpeed;
         }
     }
+    public class PulseEffect
+    {
+        public RectTransform rectTransform { get; set; }
+        public float pulseSpeed { get; set; }
+        public float minScale { get; set; }
+        public float maxScale { get; set; }
+        private bool increasing = true;
+
+        public PulseEffect(RectTransform rectTransform, float pulseSpeed, float minScale, float maxScale)
+        {
+            this.rectTransform = rectTransform;
+            this.pulseSpeed = pulseSpeed;
+            this.minScale = minScale;
+            this.maxScale = maxScale;
+        }
+
+        public void UpdatePulse()
+        {
+            float scale = rectTransform.localScale.x;
+
+            if (increasing)
+            {
+                scale += pulseSpeed * Time.deltaTime;
+                if (scale >= maxScale)
+                {
+                    scale = maxScale;
+                    increasing = false;
+                }
+            }
+            else
+            {
+                scale -= pulseSpeed * Time.deltaTime;
+                if (scale <= minScale)
+                {
+                    scale = minScale;
+                    increasing = true;
+                }
+            }
+
+            rectTransform.localScale = new Vector3(scale, scale, scale);
+        }
+    }
+
+    public class WobbleEffect
+    {
+        public RectTransform rectTransform { get; set; }
+        public float wobbleSpeed { get; set; }
+        public float wobbleAmount { get; set; }
+        private float wobbleTime = 0f;
+
+        public WobbleEffect(RectTransform rectTransform, float wobbleSpeed, float wobbleAmount)
+        {
+            this.rectTransform = rectTransform;
+            this.wobbleSpeed = wobbleSpeed;
+            this.wobbleAmount = wobbleAmount;
+        }
+
+        public void UpdateWobble()
+        {
+            wobbleTime += Time.deltaTime * wobbleSpeed;
+
+            float wobbleX = Mathf.Sin(wobbleTime) * wobbleAmount;
+            float wobbleY = Mathf.Cos(wobbleTime * 0.8f) * wobbleAmount; 
+
+            rectTransform.localEulerAngles = new Vector3(wobbleX, wobbleY, rectTransform.localEulerAngles.z);
+        }
+    }
+
+    public class HeightIncreaseEffect
+    {
+        public RectTransform rectTransform { get; set; }
+        public float heightIncreaseSpeed { get; set; }
+        public float targetHeight { get; set; }
+        public string canvasName { get; set; }
+        public string nameString { get; set; }
+        public float nameSize { get; set; }
+        public Vector2 namePos { get; set; }
+        public string scoreString { get; set; }
+        public float scoreSize { get; set; }
+        public Vector2 scorePos { get; set; }
+        public Color textColour { get; set; }
+
+
+
+        public bool isDone = false;
+
+        public bool hasTextStarted = false;
+
+        public HeightIncreaseEffect(RectTransform rectTransform, float heightIncreaseSpeed, float targetHeight, string canvasName, 
+                                    string nameString, float nameSize, Vector2 namePos, string scoreString, float scoreSize, Vector2 scorePos, Color textColour )
+        {
+            this.rectTransform = rectTransform;
+            this.heightIncreaseSpeed = heightIncreaseSpeed;
+            this.targetHeight = targetHeight;
+            this.canvasName = canvasName;
+            this.nameString = nameString;
+            this.nameSize = nameSize;
+            this.namePos = namePos;
+            this.scoreString = scoreString;
+            this.scoreSize = scoreSize;
+            this.scorePos = scorePos;
+            this.textColour = textColour;
+
+            this.rectTransform.pivot = new Vector2(this.rectTransform.pivot.x, 0);
+        }
+
+        public void UpdateHeight()
+        {
+            float currentHeight = rectTransform.sizeDelta.y;
+
+            if (currentHeight < targetHeight)
+            {
+                float progress = currentHeight / targetHeight;
+
+                float effectiveHeightIncreaseSpeed = heightIncreaseSpeed;
+
+                if (progress > 0.75f)
+                {
+                    effectiveHeightIncreaseSpeed *= 0.5f;
+                }
+
+                float newHeight = Mathf.Min(currentHeight + effectiveHeightIncreaseSpeed * Time.deltaTime, targetHeight);
+
+                Vector2 sizeDelta = rectTransform.sizeDelta;
+                sizeDelta.y = newHeight;
+                rectTransform.sizeDelta = sizeDelta;
+            }
+            else
+            {
+                isDone = true;
+            }
+        }
+
+
+    }
 
 
     public List<ObjectToScale> objectsToScale = new List<ObjectToScale>();
     public List<ParentObjectToMoveFromPointToPoint> parentObjectsToMoveFromPointToPoint = new List<ParentObjectToMoveFromPointToPoint>();
     public List<ObjectToMoveInCircle> objectsToMoveInCircle = new List<ObjectToMoveInCircle>();
+    public List<PulseEffect> pulseEffects = new List<PulseEffect>();
+    public List<WobbleEffect> wobbleEffects = new List<WobbleEffect>();
+    public List<HeightIncreaseEffect> heightIncreaseEffects = new List<HeightIncreaseEffect>();
 
     public void Update()
     {
         IncreaseObjectSize();
         MoveParentObjectsToNextPoint();
         MoveObjectsInCircle();
+        UpdatePulseEffects();
+        UpdateWobbleEffects();
+        UpdateHeightIncreaseEffects();
 
         for (int i = 0; i < parentObjectsToMoveFromPointToPoint.Count; i++)
         {
@@ -128,6 +274,22 @@ public class CanvasUIEffects : MonoBehaviour
 
                 ReducingTransparencyOfMovingObject(i);
 
+            }
+        }
+
+        for (int i = 0; i < heightIncreaseEffects.Count; i++)
+        {
+            if (heightIncreaseEffects[i].isDone && !heightIncreaseEffects[i].hasTextStarted)
+            {
+                heightIncreaseEffects[i].hasTextStarted = true;
+
+                CreateScalableText(heightIncreaseEffects[i].canvasName,"PlayerName",
+                                heightIncreaseEffects[i].nameString, heightIncreaseEffects[i].nameSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].namePos,
+                                7, 1 * 1.5f, null);
+
+                CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerScore",
+                           heightIncreaseEffects[i].scoreString, heightIncreaseEffects[i].scoreSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].scorePos,
+                           7, 1, null);
             }
         }
     }
@@ -153,41 +315,44 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates a new EndgameScreen canvas if one doesnt already exist
     // Feature #1, Task ID #5
-    public void CreateCanvas()
+    public void CreateCanvas(string canvasName)
     {
-        Canvas existingCanvas = GameObject.FindObjectOfType<Canvas>();
-        if (existingCanvas != null && existingCanvas.gameObject.name == "EndscreenCanvas")
+        Canvas[] existingCanvases = GameObject.FindObjectsOfType<Canvas>();
+
+        foreach (Canvas existingCanvas in existingCanvases)
         {
-            Debug.LogWarning("EndscreenCanvas already exists in the scene");
-            canvas = existingCanvas;
-            return;
+            if (existingCanvas.gameObject.name == canvasName)
+            {
+                Debug.LogWarning(canvasName + " already exists in the scene");
+                canvas = existingCanvas;
+                return;
+            }
         }
 
-        canvas = new GameObject("EndscreenCanvas").AddComponent<Canvas>();
+        canvas = new GameObject(canvasName).AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
     }
 
     // Feature #1, Task ID #6
-    public Canvas GetCanvas()
+    public Canvas GetCanvas(string canvasName)
     {
-        Canvas existingCanvas = GameObject.FindObjectOfType<Canvas>();
-        if (existingCanvas != null && existingCanvas.gameObject.name == "EndscreenCanvas")
+        Canvas[] existingCanvases = GameObject.FindObjectsOfType<Canvas>();
+        foreach (Canvas existingCanvas in existingCanvases)
         {
-           // Debug.LogWarning("EndscreenCanvas already exists in the scene");
-            canvas = existingCanvas;
-            return canvas;
+            if (existingCanvas.gameObject.name == canvasName)
+            {
+                return existingCanvas;
+            }
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     // Creates a background / rectangle on the canvas
     // Feature #2, Task ID #10
-    public void CreateRectangleOnCanvas(Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour, Transform parent)
+    public void CreateRectangleOnCanvas(string canvasName, Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPosition, Vector2 sizeDelta, Color colour, Transform parent)
     {
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject backgroundRect = new GameObject("BackgroundRectangle");
 
@@ -197,15 +362,15 @@ public class CanvasUIEffects : MonoBehaviour
         }
         else
         {
-            if (GetCanvas() != null)
+            if (GetCanvas(canvasName) != null)
             {
-                backgroundRect.transform.SetParent(GetCanvas().transform, false);
+                backgroundRect.transform.SetParent(GetCanvas(canvasName).transform, false);
             }
         }
 
         Image newRect = backgroundRect.AddComponent<Image>();
 
-        newRect.color = colour;
+        newRect.color = FixRGBColour(colour);
 
         RectTransform rectTransform = newRect.GetComponent<RectTransform>();
         rectTransform.anchorMin = anchorMin;
@@ -214,7 +379,7 @@ public class CanvasUIEffects : MonoBehaviour
 
         if (sizeDelta == Vector2.zero)
         {
-            Canvas canvas = GetCanvas();
+            Canvas canvas = GetCanvas(canvasName);
 
             if (canvas != null)
             {
@@ -233,15 +398,15 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates a blank image on the canvas
     // Feature #3, Task ID #24
-    public void CreateImageOnCanvas(Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Color colour, Transform parent)
+    public void CreateImageOnCanvas(string canvasName, Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Color colour, Transform parent)
     {
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject backgroundImage = new GameObject("Image");
         backgroundImage.transform.SetParent(parent, false);
         Image newImage = backgroundImage.AddComponent<Image>();
 
-        newImage.color = colour;
+        newImage.color = FixRGBColour(colour);
 
         if(parent != null)
         {
@@ -249,26 +414,25 @@ public class CanvasUIEffects : MonoBehaviour
         }
         else
         {
-            if (GetCanvas() != null)
+            if (GetCanvas(canvasName) != null)
             {
-                backgroundImage.transform.SetParent(GetCanvas().transform, false);
+                backgroundImage.transform.SetParent(GetCanvas(canvasName).transform, false);
             }
         }
 
 
         RectTransform rectTransform = newImage.GetComponent<RectTransform>();
-
         rectTransform.sizeDelta = size;
         rectTransform.localPosition = startPos;
-
+      
         CreateObjectToScale(maxScale, scaleSpeed, rectTransform);
     }
 
     // Creates an image with a texture on the canvas
     // Feature #3, Task ID #25
-    public void CreateImageWithTextureOnCanvas(string spriteName, Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Transform parent)
+    public void CreateImageWithTextureOnCanvas(string canvasName, string spriteName, Vector2 size, Vector2 startPos, float maxScale, float scaleSpeed, Transform parent)
     {
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject backgroundImage = new GameObject(spriteName + "Image");
         Image newImage = backgroundImage.AddComponent<Image>();
@@ -282,9 +446,9 @@ public class CanvasUIEffects : MonoBehaviour
         }
         else
         {
-            if (GetCanvas() != null)
+            if (GetCanvas(canvasName) != null)
             {
-                backgroundImage.transform.SetParent(GetCanvas().transform, false);
+                backgroundImage.transform.SetParent(GetCanvas(canvasName).transform, false);
             }
         }
         RectTransform rectTransform = newImage.GetComponent<RectTransform>();
@@ -297,16 +461,16 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates text that scales on the canvas
     // Feature #1, Task ID #15
-    public void CreateScalableText(string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
+    public void CreateScalableText(string canvasName, string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
     {
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject textObject = new GameObject(textName);
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
 
         textMeshProUGUI.text = textString;
         textMeshProUGUI.fontSize = textSize;
-        textMeshProUGUI.color = colour;
+        textMeshProUGUI.color = FixRGBColour(colour);
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
 
@@ -316,9 +480,9 @@ public class CanvasUIEffects : MonoBehaviour
         }
         else
         {
-            if (GetCanvas() != null)
+            if (GetCanvas(canvasName) != null)
             {
-                textObject.transform.SetParent(GetCanvas().transform, false);
+                textObject.transform.SetParent(GetCanvas(canvasName).transform, false);
             }
         }
 
@@ -376,10 +540,10 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates object that moves in a circle around a set point
     // Feature #4, Task ID #20
-    public void CreateMovingObject(Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, string spriteName, float deleteTimer, Transform parent, 
+    public void CreateMovingObject(string canvasName, Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, string spriteName, float deleteTimer, Transform parent, 
                                     bool scaleObject, float maxScale, float scaleSpeed)
     {
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject parentObj = new GameObject("MovingParent");
         RectTransform parentRectTransform = parentObj.AddComponent<RectTransform>();
@@ -389,9 +553,9 @@ public class CanvasUIEffects : MonoBehaviour
         }
         else
         {
-            if (GetCanvas() != null)
+            if (GetCanvas(canvasName) != null)
             {
-                parentObj.transform.SetParent(GetCanvas().transform, false);
+                parentObj.transform.SetParent(GetCanvas(canvasName).transform, false);
             }
         }
 
@@ -416,10 +580,10 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates object that moves in a circle around a set point with text
     // Feature #4, Task ID #21
-    public void CreateMovingObjectWithText(Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, 
+    public void CreateMovingObjectWithText(string canvasName, Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, 
         string spriteName, string textString, float textSize, Color textColor, float deleteTimer, Transform parent, bool scaleObject, float maxScale, float scaleSpeed)
     {
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject parentObj = new GameObject("MovingParent");
         RectTransform parentRectTransform = parentObj.AddComponent<RectTransform>();
@@ -429,9 +593,9 @@ public class CanvasUIEffects : MonoBehaviour
         }
         else
         {
-            if (GetCanvas() != null)
+            if (GetCanvas(canvasName) != null)
             {
-                parentObj.transform.SetParent(GetCanvas().transform, false);
+                parentObj.transform.SetParent(GetCanvas(canvasName).transform, false);
             }
         }
 
@@ -456,7 +620,7 @@ public class CanvasUIEffects : MonoBehaviour
 
         textMeshProUGUI.text = textString;
         textMeshProUGUI.fontSize = textSize;
-        textMeshProUGUI.color = textColor;
+        textMeshProUGUI.color = FixRGBColour(textColor);
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Center;
 
@@ -479,7 +643,7 @@ public class CanvasUIEffects : MonoBehaviour
 
         textMeshProUGUI.text = textString;
         textMeshProUGUI.fontSize = textSize;
-        textMeshProUGUI.color = colour;
+        textMeshProUGUI.color = FixRGBColour(colour);
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
 
@@ -581,21 +745,36 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
-    // Feature #1, Task ID #7
-    public void DeleteEndScreenCanvas()
+    public Color FixRGBColour(Color colourToFix)
     {
-        GameObject existingCanvas = GameObject.Find("EndscreenCanvas");
-        if (existingCanvas != null && existingCanvas.gameObject.name == "EndscreenCanvas")
+        float r = colourToFix.r > 1 ? colourToFix.r / 255f : colourToFix.r;
+        float g = colourToFix.g > 1 ? colourToFix.g / 255f : colourToFix.g;
+        float b = colourToFix.b > 1 ? colourToFix.b / 255f : colourToFix.b;
+
+        return new Color(r, g, b);
+    }
+
+    // Feature #1, Task ID #7
+    public void DeleteEndScreenCanvas(string canvasName)
+    {
+        GameObject existingCanvas = GameObject.Find(canvasName);
+        if (existingCanvas != null && existingCanvas.gameObject.name == canvasName)
         {
             Destroy(existingCanvas);
             objectsToScale.Clear();
             parentObjectsToMoveFromPointToPoint.Clear();
             objectsToMoveInCircle.Clear();
+            pulseEffects.Clear();
+            wobbleEffects.Clear();
+            heightIncreaseEffects.Clear();
         }
     }
 
     // Creates entire end game screen
-    public void CreateEndScreen(Color backgroundColour,
+    public void CreateLeaderboard(string canvasName,
+        Color backgroundColour,
+        string titleTextString,
+        float titleTextSize,
         Color playerBackgroundColour,
         Vector2 playerBackgroundSize,
         Vector2 topOfLeaderBoardPosition,
@@ -620,25 +799,51 @@ public class CanvasUIEffects : MonoBehaviour
         float movingObjectDeletionTimer,
         bool canMovingObjectScale,
         float movingObjectMaxScale,
-        float movingObjectScaleSpeed)
-
+        float movingObjectScaleSpeed,
+        string pulsatingImageTextureName,
+        Vector2 pulsatingImageStartPos,
+        Vector2 pulsatingImageSize,
+        float pulsatingImageMinScale,
+        float pulsatingImageMaxScale,
+        float pulsatingImagePulseSpeed,
+        string pulsatingTextString,
+        float pulsatingTextSize,
+        Color pulsatingTextColor,
+        Vector2 pulsatingTextStartPos,
+        float pulsatingTextMinScale,
+        float pulsatingTextMaxScale,
+        float pulsatingTextSpeed,
+        string wobblingImageTexture,
+        Vector2 wobblingImageStartPos,
+        Vector2 wobblingImageSize,
+        float wobblingImageWobbleSpeed,
+        float wobblingImageWobbleAmount)
     {
 
         string[] playerNames = playerInfo.Keys.ToArray();
         string[] playerScores = playerInfo.Values.ToArray();
 
-
-        CreateCanvas();
+        CreateCanvas(canvasName);
 
         GameObject leaderboard = new GameObject("Leaderboard");
 
-        if (GetCanvas().transform != null)
+        if (GetCanvas(canvasName).transform != null)
         {
-            leaderboard.transform.SetParent(GetCanvas().transform, false);
+            leaderboard.transform.SetParent(GetCanvas(canvasName).transform, false);
         }
 
         // Feature #5, Task ID #32
-        CreateRectangleOnCanvas(Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, backgroundColour, leaderboard.transform);
+        CreateRectangleOnCanvas(canvasName, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, FixRGBColour(backgroundColour), leaderboard.transform);
+
+        CreateScalableText(canvasName,
+                "Title",
+                titleTextString,
+                titleTextSize,
+                FixRGBColour(textColour),
+                new Vector2(0, topOfLeaderBoardPosition.y + ((playerBackgroundSize.y * playerBackgroundMaxScale) * 3f)),
+                textMaxScale,
+                scaleSpeed * 1.5f,
+                leaderboard.transform);
 
         Vector2 currentPos = topOfLeaderBoardPosition;
 
@@ -658,18 +863,20 @@ public class CanvasUIEffects : MonoBehaviour
             }
 
             // Feature #5, Task ID #33
-            CreateImageOnCanvas(newPlayerBackgroundSize,
+            CreateImageOnCanvas(canvasName, 
+                newPlayerBackgroundSize,
                 currentPos,
                 playerBackgroundMaxScale,
                 scaleSpeed,
-                playerBackgroundColour,
+                FixRGBColour(playerBackgroundColour),
                 leaderboard.transform);
 
             // Feature #5, Task ID #34
-            CreateScalableText("Player" + (i + 1).ToString() + "Name",
+            CreateScalableText(canvasName,
+                "Player" + (i + 1).ToString() + "Name",
                 playerNames[i],
                 newTextSize,
-                textColour,
+                FixRGBColour(textColour),
                new Vector2(currentPos.x + nameTextOffsetX, currentPos.y),
                 textMaxScale,
                 scaleSpeed * 1.5f,
@@ -680,10 +887,11 @@ public class CanvasUIEffects : MonoBehaviour
             scoreTextX *= 0.5f;
 
             // Feature #5, Task ID #35
-            CreateScalableText("Player" + (i + 1).ToString() + "Score",
+            CreateScalableText(canvasName,
+                "Player" + (i + 1).ToString() + "Score",
                     playerScores[i],
                     newTextSize ,
-                    textColour,
+                    FixRGBColour(textColour),
                     new Vector2(scoreTextX + scoreTextOffsetX, currentPos.y),
                     textMaxScale,
                     scaleSpeed * 1.5f,
@@ -691,8 +899,337 @@ public class CanvasUIEffects : MonoBehaviour
         }
 
         // Feature #5, Task ID #36
-        CreateMovingObjectWithText(movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, movingObjectPositions, movingObjectSpriteTextureString,
-                                    movingObjectTextString, movingObjectTextSize, movingObjectTextColour, movingObjectDeletionTimer, 
+        CreateMovingObjectWithText(canvasName, movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, movingObjectPositions, 
+                                    movingObjectSpriteTextureString,movingObjectTextString, movingObjectTextSize, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, 
                                     leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
+
+        CreateWobbleEffectImage(canvasName, "WobblingImage", wobblingImageTexture, wobblingImageStartPos, wobblingImageSize,
+                                wobblingImageWobbleSpeed, wobblingImageWobbleAmount, leaderboard.transform);
+
+        CreatePulseEffectImage(canvasName, "PulsingImage", pulsatingImageTextureName, pulsatingImageStartPos, pulsatingImageSize,
+                               pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed, leaderboard.transform);
+
+        CreatePulseEffectTextObject(canvasName, "PulsingText", pulsatingTextString, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
+                                      pulsatingTextStartPos, pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed, leaderboard.transform);
+
+
     }
+
+    public void AddPulseEffect(RectTransform rectTransform, float pulseSpeed, float minScale, float maxScale)
+    {
+        PulseEffect pulseEffect = new PulseEffect(rectTransform, pulseSpeed, minScale, maxScale);
+        pulseEffects.Add(pulseEffect);
+    }
+
+    public void UpdatePulseEffects()
+    {
+        foreach (PulseEffect pulseEffect in pulseEffects)
+        {
+            pulseEffect.UpdatePulse();
+        }
+    }
+
+    public void CreatePulseEffectTextObject(string canvasName, string textName, string textString, 
+        float textSize, Color colour, Vector2 startPos, float minScale, float maxScale, float pulseSpeed, Transform parent)
+    {
+        CreateCanvas(canvasName);
+
+        GameObject textObject = new GameObject(textName);
+
+        TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
+
+        textMeshProUGUI.text = textString;
+        textMeshProUGUI.fontSize = textSize;
+        textMeshProUGUI.color = FixRGBColour(colour);
+        textMeshProUGUI.fontStyle = FontStyles.Bold;
+        textMeshProUGUI.alignment = TextAlignmentOptions.Left;
+
+        if (parent != null)
+        {
+            textObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas(canvasName) != null)
+            {
+                textObject.transform.SetParent(GetCanvas(canvasName).transform, false);
+            }
+        }
+
+        RectTransform textRectTransform = textMeshProUGUI.GetComponent<RectTransform>();
+        textRectTransform.sizeDelta = new Vector2(textMeshProUGUI.preferredWidth, textSize);
+        textRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+
+        AddPulseEffect(textRectTransform, pulseSpeed, minScale, maxScale);
+    }
+
+    // Feature #7, task #42
+
+    public void CreatePulseEffectImage(string canvasName, string imageName, string textureName, Vector2 startPos, Vector2 size, float minScale, float maxScale, float pulseSpeed, Transform parent)
+    {
+        CreateCanvas(canvasName);
+
+        GameObject imageObject = new GameObject(imageName);
+
+        Image image = imageObject.AddComponent<Image>();
+
+        Texture2D texture = Resources.Load<Texture2D>(textureName);
+        if (texture == null)
+        {
+            Debug.LogError("Texture not found: " + textureName);
+            return;
+        }
+
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        image.sprite = sprite;
+
+        if (parent != null)
+        {
+            imageObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            Canvas canvas = GetCanvas(canvasName);
+            if (canvas != null)
+            {
+                imageObject.transform.SetParent(canvas.transform, false);
+            }
+        }
+
+        RectTransform imageRectTransform = image.GetComponent<RectTransform>();
+        imageRectTransform.sizeDelta = size;
+        imageRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+
+        AddPulseEffect(imageRectTransform, pulseSpeed, minScale, maxScale);
+    }
+
+    public void AddWobbleEffect(RectTransform rectTransform, float wobbleSpeed, float wobbleAmount)
+    {
+        WobbleEffect wobbleEffect = new WobbleEffect(rectTransform, wobbleSpeed, wobbleAmount);
+        wobbleEffects.Add(wobbleEffect);
+    }
+
+    public void UpdateWobbleEffects()
+    {
+        foreach (var wobbleEffect in wobbleEffects)
+        {
+            wobbleEffect.UpdateWobble();
+        }
+    }
+    // Feature #7, task #42
+    public void CreateWobbleEffectImage(string canvasName, string imageName, string textureName, Vector2 startPos, Vector2 size, float wobbleSpeed, float wobbleAmount, Transform parent)
+    {
+        CreateCanvas(canvasName);
+
+        GameObject imageObject = new GameObject(imageName);
+
+        Image image = imageObject.AddComponent<Image>();
+
+        Texture2D texture = Resources.Load<Texture2D>(textureName);
+        if (texture == null)
+        {
+            Debug.LogError("Texture not found: " + textureName);
+            return;
+        }
+
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        image.sprite = sprite;
+
+        if (parent != null)
+        {
+            imageObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            Canvas canvas = GetCanvas(canvasName);
+            if (canvas != null)
+            {
+                imageObject.transform.SetParent(canvas.transform, false);
+            }
+        }
+
+        RectTransform imageRectTransform = image.GetComponent<RectTransform>();
+        imageRectTransform.sizeDelta = size;
+        imageRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+
+        AddWobbleEffect(imageRectTransform, wobbleSpeed, wobbleAmount);
+    }
+
+    public void AddHeightIncreaseEffect(string canvasName, RectTransform rectTransform, float heightIncreaseSpeed, float targetHeight,
+                                      string nameString, float nameSize, Vector2 namePos, string scoreString, float scoreSize, Vector2 scorePos, Color textColour)
+    {
+        HeightIncreaseEffect heightIncreaseEffect = new HeightIncreaseEffect(rectTransform, heightIncreaseSpeed, targetHeight, canvasName, 
+                                                                               nameString, nameSize, namePos, scoreString, scoreSize, scorePos, textColour);
+        heightIncreaseEffects.Add(heightIncreaseEffect);
+    }
+
+
+    public void UpdateHeightIncreaseEffects()
+    {
+        foreach (var heightIncreaseEffect in heightIncreaseEffects)
+        {
+            heightIncreaseEffect.UpdateHeight();
+        }
+    }
+
+    public void CreateHeightIncreaseEffectObject(string canvasName, string imageName, Vector2 startPos, Vector2 size, float heightIncreaseSpeed, float targetHeight, Color colour,
+                                              string nameString, float nameSize, Vector2 namePos, string scoreString, float scoreSize, Vector2 scorePos, Color textColour, Transform parent)
+    {
+        CreateCanvas(canvasName);
+
+        GameObject imageObject = new GameObject(imageName);
+
+        Image image = imageObject.AddComponent<Image>();
+        image.color = FixRGBColour(colour);
+
+        if (parent != null)
+        {
+            imageObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            Canvas canvas = GetCanvas(canvasName);
+            if (canvas != null)
+            {
+                imageObject.transform.SetParent(canvas.transform, false);
+            }
+        }
+
+        RectTransform imageRectTransform = image.GetComponent<RectTransform>();
+        imageRectTransform.sizeDelta = size;
+        imageRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+
+        AddHeightIncreaseEffect(canvasName, imageRectTransform, heightIncreaseSpeed, targetHeight, nameString, nameSize, namePos, scoreString, scoreSize, scorePos, textColour);
+    }
+
+
+
+    // Feature #8, task #43
+    public void CreatePodiumLeaderboard(string canvasName,
+    Color backgroundColour,
+    List<Color> playerBackgroundColours,
+    float podiumWidth,
+    Vector2 podiumBasePosition,
+    float podiumScaleMultiplyer,
+    float podiumScaleSpeed,
+    float nameTextOffsetX,
+    float scoreTextOffsetX,
+    float textSize,
+    Color textColour,
+    Dictionary<string, string> playerInfo,
+    Vector2 movingObjectSize,
+    float movingObjectRadius,
+    float movingObjectRotationSpeed,
+    float movingObjectMoveSpeed,
+    string movingObjectSpriteTextureString,
+    string movingObjectTextString,
+    float movingObjectTextSize,
+    Color movingObjectTextColour,
+    float movingObjectDeletionTimer,
+    bool canMovingObjectScale,
+    float movingObjectMaxScale,
+    float movingObjectScaleSpeed,
+    string pulsatingImageTextureName,
+    Vector2 pulsatingImageStartPos,
+    float pulsatingImageMinScale,
+    float pulsatingImageMaxScale,
+    float pulsatingImagePulseSpeed,
+    string pulsatingTextString,
+    float pulsatingTextSize,
+    Color pulsatingTextColor,
+    Vector2 pulsatingTextStartPos,
+    float pulsatingTextMinScale,
+    float pulsatingTextMaxScale,
+    float pulsatingTextSpeed,
+    string wobblingImageTexture,
+    Vector2 wobblingImageStartPos,
+    Vector2 wobblingImageSize,
+    float wobblingImageWobbleSpeed,
+    float wobblingImageWobbleAmount)
+    {
+        string[] playerNames = playerInfo.Keys.ToArray();
+        string[] playerScores = playerInfo.Values.ToArray();
+
+        CreateCanvas(canvasName);
+        GameObject leaderboard = new GameObject("PodiumLeaderboard");
+
+        if (GetCanvas(canvasName).transform != null)
+        {
+            leaderboard.transform.SetParent(GetCanvas(canvasName).transform, false);
+        }
+
+        CreateRectangleOnCanvas(canvasName, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, FixRGBColour(backgroundColour), leaderboard.transform);
+
+        int numberOfPlayers = playerInfo.Count;
+
+        Vector2[] podiumPositions = CalculatePodiumPositions(podiumBasePosition, numberOfPlayers, 250);
+
+        List<Vector2> newMovingObjectPositions = new List<Vector2>();
+
+        // TO DO - Scale up sizes on the bottom 3 images/text
+        // Do some more testing and get both leaderboards fully working
+        for (int i = 0; i < numberOfPlayers; i++)
+        {
+            Vector2 podiumPosition = podiumPositions[i];
+
+            int scoreValue = int.Parse(playerScores[i]);
+
+            Vector2 nameTextPosition = new Vector2(podiumPosition.x + nameTextOffsetX, podiumPosition.y + podiumPosition.y * 0.6f);
+
+
+            Vector2 scoreTextPosition = new Vector2(podiumPosition.x + scoreTextOffsetX, podiumPosition.y + podiumPosition.y * 0.4f);
+
+            CreateHeightIncreaseEffectObject(canvasName, "Podium" + (i + 1).ToString(), podiumPosition, new Vector2(podiumWidth, 0),
+                                    podiumScaleSpeed, scoreValue * podiumScaleMultiplyer, FixRGBColour(playerBackgroundColours[i]),
+                                    playerNames[i], textSize, nameTextPosition, playerScores[i], textSize, scoreTextPosition, FixRGBColour(textColour), leaderboard.transform);
+
+
+            // newMovingObjectPositions.Add(new Vector2(podiumPosition.x, podiumPosition.y + (newPlayerBackgroundSize.y)));
+            newMovingObjectPositions.Add(new Vector2(podiumPositions[i].x, podiumPositions[i].y + (scoreValue * podiumScaleMultiplyer)));
+        }
+
+        CreateMovingObjectWithText(canvasName, movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, newMovingObjectPositions, movingObjectSpriteTextureString,
+            movingObjectTextString, movingObjectTextSize, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
+
+        Vector2 newPulsatingImageSize = new Vector2(podiumBasePosition.x  * 0.2f, podiumBasePosition.y  * 0.7f);
+
+        CreatePulseEffectImage(canvasName, "PulsingImage", pulsatingImageTextureName, pulsatingImageStartPos, newPulsatingImageSize,
+                               pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed, leaderboard.transform);
+
+        CreatePulseEffectTextObject(canvasName, "Podium Leaderboard Text", pulsatingTextString, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
+                                      pulsatingTextStartPos, pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed, leaderboard.transform);
+
+        CreateWobbleEffectImage(canvasName, "WobblingImage", wobblingImageTexture, wobblingImageStartPos, wobblingImageSize,
+                                wobblingImageWobbleSpeed, wobblingImageWobbleAmount, leaderboard.transform);
+    }
+
+    Vector2[] CalculatePodiumPositions(Vector2 basePosition, int numberOfPlayers, float horizontalSpacing)
+    {
+        Vector2[] positions = new Vector2[numberOfPlayers];
+        positions[0] = basePosition;
+
+        if(numberOfPlayers % 2 == 0)
+        {
+            positions[0] = new Vector2(positions[0].x + (horizontalSpacing / 2.0f), positions[0].y);
+        }
+
+        for (int i = 1; i < numberOfPlayers; i++)
+        {
+            int direction = (i % 2 == 1) ? -1 : 1;
+            int step = (i + 1) / 2;
+
+            float xOffset = step * horizontalSpacing * direction;
+
+            if (numberOfPlayers % 2 == 0)
+            {
+                xOffset += horizontalSpacing / 2;
+            }
+
+            positions[i] = basePosition + new Vector2(xOffset, 0);
+        }
+
+        return positions;
+    }
+
+  
 }
