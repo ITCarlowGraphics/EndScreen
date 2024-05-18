@@ -104,6 +104,8 @@ public class CanvasUIEffects : MonoBehaviour
             this.scaleSpeed = scaleSpeed;
         }
     }
+
+    // Feature #7, task #42
     public class PulseEffect
     {
         public RectTransform rectTransform { get; set; }
@@ -147,6 +149,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    // Feature #7, task #45
     public class WobbleEffect
     {
         public RectTransform rectTransform { get; set; }
@@ -172,6 +175,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    // Feature #7, task #46
     public class HeightIncreaseEffect
     {
         public RectTransform rectTransform { get; set; }
@@ -207,7 +211,7 @@ public class CanvasUIEffects : MonoBehaviour
             this.scorePos = scorePos;
             this.textColour = textColour;
 
-            this.rectTransform.pivot = new Vector2(this.rectTransform.pivot.x, 0);
+            //this.rectTransform.pivot = new Vector2(this.rectTransform.pivot.x, 0);
         }
 
         public void UpdateHeight()
@@ -236,8 +240,6 @@ public class CanvasUIEffects : MonoBehaviour
                 isDone = true;
             }
         }
-
-
     }
 
 
@@ -285,11 +287,11 @@ public class CanvasUIEffects : MonoBehaviour
 
                 CreateScalableText(heightIncreaseEffects[i].canvasName,"PlayerName",
                                 heightIncreaseEffects[i].nameString, heightIncreaseEffects[i].nameSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].namePos,
-                                7, 1 * 1.5f, null);
+                                5, 1, 0.5f, null);
 
                 CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerScore",
                            heightIncreaseEffects[i].scoreString, heightIncreaseEffects[i].scoreSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].scorePos,
-                           7, 1, null);
+                           5, 1, 0.5f, null);
             }
         }
     }
@@ -323,7 +325,6 @@ public class CanvasUIEffects : MonoBehaviour
         {
             if (existingCanvas.gameObject.name == canvasName)
             {
-                Debug.LogWarning(canvasName + " already exists in the scene");
                 canvas = existingCanvas;
                 return;
             }
@@ -461,7 +462,7 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates text that scales on the canvas
     // Feature #1, Task ID #15
-    public void CreateScalableText(string canvasName, string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
+    public void CreateScalableText(string canvasName, string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, float xPivot, Transform parent)
     {
         CreateCanvas(canvasName);
 
@@ -473,6 +474,8 @@ public class CanvasUIEffects : MonoBehaviour
         textMeshProUGUI.color = FixRGBColour(colour);
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
+
+
 
         if (parent != null)
         {
@@ -489,6 +492,7 @@ public class CanvasUIEffects : MonoBehaviour
         RectTransform textRectTransform = textMeshProUGUI.GetComponent<RectTransform>();
         textRectTransform.sizeDelta = new Vector2(textMeshProUGUI.preferredWidth, textSize);
         textRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+        textRectTransform.pivot = new Vector2(xPivot, textRectTransform.pivot.y);
 
         CreateObjectToScale(targetScale, scaleSpeed, textRectTransform);
     }
@@ -775,6 +779,7 @@ public class CanvasUIEffects : MonoBehaviour
         Color backgroundColour,
         string titleTextString,
         float titleTextSize,
+        float titleTextYOffset,
         Color playerBackgroundColour,
         Vector2 playerBackgroundSize,
         Vector2 topOfLeaderBoardPosition,
@@ -840,9 +845,10 @@ public class CanvasUIEffects : MonoBehaviour
                 titleTextString,
                 titleTextSize,
                 FixRGBColour(textColour),
-                new Vector2(0, topOfLeaderBoardPosition.y + ((playerBackgroundSize.y * playerBackgroundMaxScale) * 3f)),
+                new Vector2(0, topOfLeaderBoardPosition.y + ((playerBackgroundSize.y * playerBackgroundMaxScale) * titleTextYOffset)),
                 textMaxScale,
                 scaleSpeed * 1.5f,
+                0.5f,
                 leaderboard.transform);
 
         Vector2 currentPos = topOfLeaderBoardPosition;
@@ -871,15 +877,20 @@ public class CanvasUIEffects : MonoBehaviour
                 FixRGBColour(playerBackgroundColour),
                 leaderboard.transform);
 
+            float nameTextIndentation = (newPlayerBackgroundSize.x * playerBackgroundMaxScale) / 2.0f;
+            float leftSideX = nameTextIndentation * -1;
+            float nameTextX = leftSideX + (newPlayerBackgroundSize.x * playerBackgroundMaxScale * 0.05f);
+
             // Feature #5, Task ID #34
             CreateScalableText(canvasName,
                 "Player" + (i + 1).ToString() + "Name",
                 playerNames[i],
                 newTextSize,
                 FixRGBColour(textColour),
-               new Vector2(currentPos.x + nameTextOffsetX, currentPos.y),
+                new Vector2(nameTextX + nameTextOffsetX, currentPos.y),
                 textMaxScale,
                 scaleSpeed * 1.5f,
+                0,
                 leaderboard.transform);
 
             float rightSideX = currentPos.x + (newPlayerBackgroundSize.x * playerBackgroundMaxScale);
@@ -895,6 +906,7 @@ public class CanvasUIEffects : MonoBehaviour
                     new Vector2(scoreTextX + scoreTextOffsetX, currentPos.y),
                     textMaxScale,
                     scaleSpeed * 1.5f,
+                    0.5f,
                     leaderboard.transform);
         }
 
@@ -911,16 +923,16 @@ public class CanvasUIEffects : MonoBehaviour
 
         CreatePulseEffectTextObject(canvasName, "PulsingText", pulsatingTextString, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
                                       pulsatingTextStartPos, pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed, leaderboard.transform);
-
-
     }
 
+    // Feature #7, task #42
     public void AddPulseEffect(RectTransform rectTransform, float pulseSpeed, float minScale, float maxScale)
     {
         PulseEffect pulseEffect = new PulseEffect(rectTransform, pulseSpeed, minScale, maxScale);
         pulseEffects.Add(pulseEffect);
     }
 
+    // Feature #7, task #42
     public void UpdatePulseEffects()
     {
         foreach (PulseEffect pulseEffect in pulseEffects)
@@ -929,6 +941,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    // Feature #7, task #42
     public void CreatePulseEffectTextObject(string canvasName, string textName, string textString, 
         float textSize, Color colour, Vector2 startPos, float minScale, float maxScale, float pulseSpeed, Transform parent)
     {
@@ -964,7 +977,6 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Feature #7, task #42
-
     public void CreatePulseEffectImage(string canvasName, string imageName, string textureName, Vector2 startPos, Vector2 size, float minScale, float maxScale, float pulseSpeed, Transform parent)
     {
         CreateCanvas(canvasName);
@@ -1003,12 +1015,14 @@ public class CanvasUIEffects : MonoBehaviour
         AddPulseEffect(imageRectTransform, pulseSpeed, minScale, maxScale);
     }
 
+    // Feature #7, task #45
     public void AddWobbleEffect(RectTransform rectTransform, float wobbleSpeed, float wobbleAmount)
     {
         WobbleEffect wobbleEffect = new WobbleEffect(rectTransform, wobbleSpeed, wobbleAmount);
         wobbleEffects.Add(wobbleEffect);
     }
 
+    // Feature #7, task #45
     public void UpdateWobbleEffects()
     {
         foreach (var wobbleEffect in wobbleEffects)
@@ -1016,7 +1030,7 @@ public class CanvasUIEffects : MonoBehaviour
             wobbleEffect.UpdateWobble();
         }
     }
-    // Feature #7, task #42
+    // Feature #7, task #45
     public void CreateWobbleEffectImage(string canvasName, string imageName, string textureName, Vector2 startPos, Vector2 size, float wobbleSpeed, float wobbleAmount, Transform parent)
     {
         CreateCanvas(canvasName);
@@ -1055,6 +1069,7 @@ public class CanvasUIEffects : MonoBehaviour
         AddWobbleEffect(imageRectTransform, wobbleSpeed, wobbleAmount);
     }
 
+    // Feature #7, task #46
     public void AddHeightIncreaseEffect(string canvasName, RectTransform rectTransform, float heightIncreaseSpeed, float targetHeight,
                                       string nameString, float nameSize, Vector2 namePos, string scoreString, float scoreSize, Vector2 scorePos, Color textColour)
     {
@@ -1063,7 +1078,7 @@ public class CanvasUIEffects : MonoBehaviour
         heightIncreaseEffects.Add(heightIncreaseEffect);
     }
 
-
+    // Feature #7, task #46
     public void UpdateHeightIncreaseEffects()
     {
         foreach (var heightIncreaseEffect in heightIncreaseEffects)
@@ -1072,6 +1087,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
     }
 
+    // Feature #7, task #46
     public void CreateHeightIncreaseEffectObject(string canvasName, string imageName, Vector2 startPos, Vector2 size, float heightIncreaseSpeed, float targetHeight, Color colour,
                                               string nameString, float nameSize, Vector2 namePos, string scoreString, float scoreSize, Vector2 scorePos, Color textColour, Transform parent)
     {
@@ -1098,11 +1114,10 @@ public class CanvasUIEffects : MonoBehaviour
         RectTransform imageRectTransform = image.GetComponent<RectTransform>();
         imageRectTransform.sizeDelta = size;
         imageRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+        imageRectTransform.pivot = new Vector2(imageRectTransform.pivot.x, 0);
 
         AddHeightIncreaseEffect(canvasName, imageRectTransform, heightIncreaseSpeed, targetHeight, nameString, nameSize, namePos, scoreString, scoreSize, scorePos, textColour);
     }
-
-
 
     // Feature #8, task #43
     public void CreatePodiumLeaderboard(string canvasName,
@@ -1110,10 +1125,11 @@ public class CanvasUIEffects : MonoBehaviour
     List<Color> playerBackgroundColours,
     float podiumWidth,
     Vector2 podiumBasePosition,
+    float spaceBetweenPodiums,
     float podiumScaleMultiplyer,
     float podiumScaleSpeed,
-    float nameTextOffsetX,
-    float scoreTextOffsetX,
+    float nameTextOffsetY,
+    float scoreTextOffsetY,
     float textSize,
     Color textColour,
     Dictionary<string, string> playerInfo,
@@ -1130,7 +1146,7 @@ public class CanvasUIEffects : MonoBehaviour
     float movingObjectMaxScale,
     float movingObjectScaleSpeed,
     string pulsatingImageTextureName,
-    Vector2 pulsatingImageStartPos,
+    Vector2 pulsatingImageSize,
     float pulsatingImageMinScale,
     float pulsatingImageMaxScale,
     float pulsatingImagePulseSpeed,
@@ -1162,38 +1178,35 @@ public class CanvasUIEffects : MonoBehaviour
 
         int numberOfPlayers = playerInfo.Count;
 
-        Vector2[] podiumPositions = CalculatePodiumPositions(podiumBasePosition, numberOfPlayers, 250);
+        Vector2[] podiumPositions = CalculatePodiumPositions(podiumBasePosition, numberOfPlayers, spaceBetweenPodiums);
 
         List<Vector2> newMovingObjectPositions = new List<Vector2>();
 
-        // TO DO - Scale up sizes on the bottom 3 images/text
-        // Do some more testing and get both leaderboards fully working
         for (int i = 0; i < numberOfPlayers; i++)
         {
             Vector2 podiumPosition = podiumPositions[i];
 
             int scoreValue = int.Parse(playerScores[i]);
 
-            Vector2 nameTextPosition = new Vector2(podiumPosition.x + nameTextOffsetX, podiumPosition.y + podiumPosition.y * 0.6f);
+            Vector2 nameTextPosition = new Vector2(podiumPosition.x, podiumPosition.y + podiumPosition.y * nameTextOffsetY);
 
-
-            Vector2 scoreTextPosition = new Vector2(podiumPosition.x + scoreTextOffsetX, podiumPosition.y + podiumPosition.y * 0.4f);
+            Vector2 scoreTextPosition = new Vector2(podiumPosition.x, podiumPosition.y + podiumPosition.y * scoreTextOffsetY);
 
             CreateHeightIncreaseEffectObject(canvasName, "Podium" + (i + 1).ToString(), podiumPosition, new Vector2(podiumWidth, 0),
                                     podiumScaleSpeed, scoreValue * podiumScaleMultiplyer, FixRGBColour(playerBackgroundColours[i]),
                                     playerNames[i], textSize, nameTextPosition, playerScores[i], textSize, scoreTextPosition, FixRGBColour(textColour), leaderboard.transform);
 
 
-            // newMovingObjectPositions.Add(new Vector2(podiumPosition.x, podiumPosition.y + (newPlayerBackgroundSize.y)));
             newMovingObjectPositions.Add(new Vector2(podiumPositions[i].x, podiumPositions[i].y + (scoreValue * podiumScaleMultiplyer)));
         }
 
         CreateMovingObjectWithText(canvasName, movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, newMovingObjectPositions, movingObjectSpriteTextureString,
             movingObjectTextString, movingObjectTextSize, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
 
-        Vector2 newPulsatingImageSize = new Vector2(podiumBasePosition.x  * 0.2f, podiumBasePosition.y  * 0.7f);
+        Vector2 newPulsatingImagePos = new Vector2(podiumPositions[0].x + (podiumWidth / 2),
+                (podiumPositions[0].y + (podiumScaleMultiplyer * int.Parse(playerScores[0]))) - pulsatingImageSize.y * 0.1f);
 
-        CreatePulseEffectImage(canvasName, "PulsingImage", pulsatingImageTextureName, pulsatingImageStartPos, newPulsatingImageSize,
+        CreatePulseEffectImage(canvasName, "PulsingImage", pulsatingImageTextureName, newPulsatingImagePos, pulsatingImageSize,
                                pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed, leaderboard.transform);
 
         CreatePulseEffectTextObject(canvasName, "Podium Leaderboard Text", pulsatingTextString, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
@@ -1230,6 +1243,4 @@ public class CanvasUIEffects : MonoBehaviour
 
         return positions;
     }
-
-  
 }

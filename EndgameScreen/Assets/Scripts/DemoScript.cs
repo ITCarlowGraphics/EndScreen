@@ -40,7 +40,7 @@ public class DemoScript : MonoBehaviour
 
     public void CreateScalingText()
     {
-        CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name", "Andy Chuggler", 3, Color.green, new Vector2(0,0), 20, 2, null);
+        CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name", "Andy Chuggler", 3, Color.green, new Vector2(0,0), 20, 2, 0.5f, null);
     }
     public void CreateMovingImage()
     {
@@ -98,99 +98,43 @@ public class DemoScript : MonoBehaviour
 
     public void CreateLeaderboard()
     {
-        //Dictionary<string, string> playerInfo = new Dictionary<string, string>()
-        //{
-        //    { "Charles", "13" },
-        //    { "Bald Frog", "10" },
-        //    { "Small Carl", "8" },
-        //    { "King Fisher", "4" },
-        //};
 
-        //List<Vector2> movingObjectPositionPoints = new List<Vector2>
-        //{
-        //     new (-120, 115),
-        //     new (0, 150),
-        //     new (120, 115),
-        //};
+        Color backgroundColour = new Color(248, 186, 66);
+        Color playerBackgroundColour = new Color(75, 72, 61);
+        Vector2 playerBackgroundSize = new Vector2(70, 12);
 
-        //Vector2 movingObjectSize = new(50, 50);
-        //float movingObjectRadius = 30.0f;
-        //float movingObjectRotationSpeed = 3.0f;
-        //float movingObjectMoveSpeed = 50.0f;
+        Vector2 topOfLeaderBoardPosition = new Vector2(0, 100);
+        float spaceBetweenPlayerBackground = 50;
 
-        //Color backgroundColour = new Color(248, 186, 66);
-        //Color playerBackgroundColour = new Color(75, 72, 61);
-
-        //string pulsatingImageTextureName = "crown";
-        //Vector2 pulsatingImageStartPos = new Vector2(330, 105);
-        //float pulsatingImageMinScale = 0.8f;
-        //float pulsatingImageMaxScale = 1.2f;
-        //float pulsatingImagePulseSpeed = 1.0f;
-        //string pulsatingTextString = "Winner";
-        //float pulsatingTextSize = 30.0f;
-        //Color pulsatingTextColor = new Color(1f, 0f, 0f);
-        //Vector2 pulsatingTextStartPos = new Vector2(300, 0);
-        //float pulsatingTextMinScale = 0.8f;
-        //float pulsatingTextMaxScale = 1.2f;
-        //float pulsatingTextSpeed = 1.0f;
-        //string wobblingImageTexture = "player";
-        //Vector2 wobblingImageStartPos = new Vector2(300, 80);
-        //Vector2 wobblingImageSize = new Vector2(100, 100);
-        //float wobblingImageWobbleSpeed = 3.0f;
-        //float wobblingImageWobbleAmount = 30.0f;
-
-        //CanvasUIEffects.Instance.CreateLeaderboard("EndScreenCanvas", backgroundColour, "Leaderboard", 10, playerBackgroundColour, new Vector2(45, 8), new Vector2(0, 100),
-        //                                           50, 5, 2, 0, 0, 3.5f, 7, Color.white, playerInfo,
-        //                                           movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, movingObjectPositionPoints,
-        //                                           "crown", "", 0, Color.black, 5, true, 2, 1,
-        //                                           pulsatingImageTextureName, pulsatingImageStartPos, new Vector2(100, 100),
-        //                                           pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed,
-        //                                           pulsatingTextString, pulsatingTextSize, pulsatingTextColor, pulsatingTextStartPos,
-        //                                           pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed,
-        //                                           wobblingImageTexture, wobblingImageStartPos, wobblingImageSize,
-        //                                           wobblingImageWobbleSpeed, wobblingImageWobbleAmount);
-
-
-        //// End Screen if using Simulator
-
-        Vector2 playerBackgroundSize = new Vector2(100, 20);
-
-        Vector2 topOfLeaderBoardPosition = new Vector2(0, 200);
-
-        float spaceBetweenPlayerBackground = 100;
-
-        float backgroundMaxScale = 10;
+        float backgroundMaxScale = 5;
         float backgroundScaleSpeed = 3;
 
         float textSize = 7;
-        float textMaxScale = 20;
+        float textMaxScale = 5;
 
         Dictionary<string, string> playerInfo = new Dictionary<string, string>()
-            {
-                { "Charles", "13" },
-                { "Bald Frog", "10" },
-                { "Small Carl", "8" },
-                { "King Fisher", "4" },
-            };
-
-        Vector2 movingObjectSize = new Vector2(200, 200);
-
-
-        float radius = 30.0f;
-        float rotationSpeed = 3.0f;
-        float movingObjectSpeed = 100.0f;
+        {
+            { "Charles", "13" },
+            { "Bald Frog", "10" },
+            { "Small Carl", "8" },
+            { "King Fisher", "4" },
+        };
 
         List<Vector2> movingObjectPositionPoints = new List<Vector2>
-            {
-                new Vector2(450, 900),
-                new Vector2(450, 400),
-                new Vector2(-450, 400),
-                new Vector2(-450, 900),
-                new Vector2(0, 700),
-            };
+        {
+             new (-170, 127),
+             new (0, 200),
+             new (170, 127),
+        };
+
+        Vector2 movingObjectSize = new(50, 50);
+        float movingObjectRadius = 30.0f;
+        float movingObjectRotationSpeed = 3.0f;
+        float movingObjectMoveSpeed = 50.0f;
 
         string pulsatingImageTextureName = "crown";
         Vector2 pulsatingImageStartPos = new Vector2(330, 105);
+        Vector2 pulsatingImageSize = new Vector2(200, 200);
         float pulsatingImageMinScale = 0.8f;
         float pulsatingImageMaxScale = 1.2f;
         float pulsatingImagePulseSpeed = 1.0f;
@@ -207,11 +151,12 @@ public class DemoScript : MonoBehaviour
         float wobblingImageWobbleSpeed = 3.0f;
         float wobblingImageWobbleAmount = 30.0f;
 
-        CanvasUIEffects.Instance.CreateLeaderboard("EndScreenCanvas",  Color.red, "Leaderboard", 10, Color.gray, playerBackgroundSize, topOfLeaderBoardPosition, spaceBetweenPlayerBackground,
-                                                 backgroundMaxScale, backgroundScaleSpeed, -50, 0, textSize, textMaxScale, Color.black, playerInfo,
-                                                 movingObjectSize, radius, rotationSpeed, movingObjectSpeed,
-                                                 movingObjectPositionPoints, "player", "Win", 50, Color.blue, 5, true, 7, 1,                    
-                                                 pulsatingImageTextureName, pulsatingImageStartPos, new Vector2(100, 100),
+        CanvasUIEffects.Instance.CreateLeaderboard("EndScreenCanvas", backgroundColour, "Leaderboard", 10, 3, playerBackgroundColour,
+                                                 playerBackgroundSize, topOfLeaderBoardPosition, spaceBetweenPlayerBackground,
+                                                 backgroundMaxScale, backgroundScaleSpeed, 0, 0, textSize, textMaxScale, Color.white, playerInfo,
+                                                 movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed,
+                                                 movingObjectPositionPoints, "crown", "", 0, Color.white, 5, true, 5, 1,
+                                                 pulsatingImageTextureName, pulsatingImageStartPos, pulsatingImageSize,
                                                  pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed,
                                                  pulsatingTextString, pulsatingTextSize, pulsatingTextColor, pulsatingTextStartPos,
                                                  pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed,
@@ -220,84 +165,79 @@ public class DemoScript : MonoBehaviour
 
     }
 
+    public void CreateLeaderboardForSimulator()
+    {
+        Color backgroundColour = new Color(248, 186, 66);
+        Color playerBackgroundColour = new Color(75, 72, 61);
+
+        Vector2 playerBackgroundSize = new Vector2(100, 20);
+        Vector2 topOfLeaderBoardPosition = new Vector2(0, 200);
+        float spaceBetweenPlayerBackground = 100;
+
+        float backgroundMaxScale = 10;
+        float backgroundScaleSpeed = 3;
+
+        float textSize = 7;
+        float textMaxScale = 16;
+
+        Dictionary<string, string> playerInfo = new Dictionary<string, string>()
+            {{ "Charles", "13" }, { "Bald Frog", "10" }, { "Small Carl", "8" }, { "King Fisher", "4" }};
+
+        Vector2 movingObjectSize = new Vector2(100, 100);
+
+
+        float movingObjectRadius = 30.0f;
+        float movingObjectRotationSpeed = 3.0f;
+        float movingObjectMoveSpeed = 75.0f;
+
+        List<Vector2> movingObjectPositionPoints = new List<Vector2>
+        {new Vector2(-500, 300), new Vector2(0, 500), new Vector2(500, 300)};
+
+        string pulsatingImageTextureName = "crown";
+        Vector2 pulsatingImageStartPos = new Vector2(87, 519);
+        Vector2 pulsatingImageSize = new Vector2(250, 250);
+        float pulsatingImageMinScale = 0.8f;
+        float pulsatingImageMaxScale = 1.2f;
+        float pulsatingImagePulseSpeed = 1.0f;
+        string pulsatingTextString = "Winner";
+        float pulsatingTextSize = 80.0f;
+        Color pulsatingTextColor = Color.white;
+        Vector2 pulsatingTextStartPos = new Vector2(0, 640);
+        float pulsatingTextMinScale = 0.8f;
+        float pulsatingTextMaxScale = 1.2f;
+        float pulsatingTextSpeed = 1.0f;
+        string wobblingImageTexture = "player";
+        Vector2 wobblingImageStartPos = new Vector2(0, 460);
+        Vector2 wobblingImageSize = new Vector2(250, 250);
+        float wobblingImageWobbleSpeed = 3.0f;
+        float wobblingImageWobbleAmount = 30.0f;
+
+        CanvasUIEffects.Instance.CreateLeaderboard("EndScreenCanvas", backgroundColour, "Leaderboard", 10, 4, playerBackgroundColour,
+                                                 playerBackgroundSize, topOfLeaderBoardPosition, spaceBetweenPlayerBackground,
+                                                 backgroundMaxScale, backgroundScaleSpeed, 0, 0, textSize, textMaxScale, Color.white, playerInfo,
+                                                 movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed,
+                                                 movingObjectPositionPoints, "crown", "", 0, Color.white, 5, true, 5, 1,
+                                                 pulsatingImageTextureName, pulsatingImageStartPos, pulsatingImageSize,
+                                                 pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed,
+                                                 pulsatingTextString, pulsatingTextSize, pulsatingTextColor, pulsatingTextStartPos,
+                                                 pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed,
+                                                 wobblingImageTexture, wobblingImageStartPos, wobblingImageSize,
+                                                 wobblingImageWobbleSpeed, wobblingImageWobbleAmount);
+    }
+
     public void CreatePodium()
     {
-
-        //string canvasName = "EndScreenCanvas";
-        //Color backgroundColour = new Color(0.2f, 0.2f, 0.2f);
-        //List<Color> playerBackgroundColours = new List<Color>() { new Color(157, 232, 242), new Color(255, 215, 0), new Color(192, 192, 192), new Color(205, 127, 50) };
-        //Vector2 playerBackgroundSize = new Vector2(50, 200);
-        //Vector2 podiumBasePosition = new Vector2(0, -150);
-        //float podiumHeightDifference = 100.0f;
-        //float playerBackgroundMaxScale = 1.5f;
-        //float scaleSpeed = 1.0f;
-        //float nameTextOffsetX = 0;
-        //float scoreTextOffsetX = 0;
-        //float textSize = 10.0f;
-        //float textMaxScale = 2.0f;
-        //Color textColour = Color.white;
-        //Dictionary<string, string> playerInfo = new Dictionary<string, string>();
-        //playerInfo.Add("Andy", "100");
-        //playerInfo.Add("Charles", "90");
-        //playerInfo.Add("Muck", "80");
-        //playerInfo.Add("Stud", "70");
-        //Vector2 movingObjectSize = new Vector2(50, 50);
-        //float movingObjectRadius = 10.0f;
-        //float movingObjectRotationSpeed = 5.0f;
-        //float movingObjectMoveSpeed = 100.0f;
-        //string movingObjectSpriteTextureString = "movingObjectTexture";
-        //string movingObjectTextString = "Loser";
-        //float movingObjectTextSize = 10.0f;
-        //Color movingObjectTextColour = Color.black;
-        //float movingObjectDeletionTimer = 5.0f;
-        //bool canMovingObjectScale = true;
-        //float movingObjectMaxScale = 2.0f;
-        //float movingObjectScaleSpeed = 1.0f;
-        //string pulsatingImageTextureName = "crown";
-        //Vector2 pulsatingImageStartPos = new Vector2(100, 100);
-        //float pulsatingImageMinScale = 0.8f;
-        //float pulsatingImageMaxScale = 1.2f;
-        //float pulsatingImagePulseSpeed = 1.0f;
-        //string pulsatingTextString = "Podium Leaderboard";
-        //float pulsatingTextSize = 30.0f;
-        //Color pulsatingTextColor = new Color(1f, 0f, 0f);
-        //Vector2 pulsatingTextStartPos = new Vector2(0, 250);
-        //float pulsatingTextMinScale = 0.8f;
-        //float pulsatingTextMaxScale = 1.2f;
-        //float pulsatingTextSpeed = 1.0f;
-        //string wobblingImageTexture = "player";
-        //Vector2 wobblingImageStartPos = new Vector2(300, 80);
-        //Vector2 wobblingImageSize = new Vector2(100, 100);
-        //float wobblingImageWobbleSpeed = 3.0f;
-        //float wobblingImageWobbleAmount = 30.0f;
-
-        //CanvasUIEffects.Instance.CreatePodiumLeaderboard(canvasName, backgroundColour, playerBackgroundColours,
-        //                         playerBackgroundSize, podiumBasePosition, podiumHeightDifference,
-        //                         playerBackgroundMaxScale, scaleSpeed,
-        //                         nameTextOffsetX, scoreTextOffsetX, textSize, textMaxScale, textColour,
-        //                         playerInfo, movingObjectSize, movingObjectRadius,
-        //                         movingObjectRotationSpeed, movingObjectMoveSpeed,
-        //                         movingObjectSpriteTextureString, movingObjectTextString, movingObjectTextSize,
-        //                         movingObjectTextColour, movingObjectDeletionTimer,
-        //                         canMovingObjectScale, movingObjectMaxScale,
-        //                         movingObjectScaleSpeed, pulsatingImageTextureName,
-        //                         pulsatingImageStartPos, pulsatingImageMinScale, pulsatingImageMaxScale,
-        //                         pulsatingImagePulseSpeed, pulsatingTextString, pulsatingTextSize,
-        //                         pulsatingTextColor, pulsatingTextStartPos, pulsatingTextMinScale,
-        //                         pulsatingTextMaxScale, pulsatingTextSpeed, wobblingImageTexture,
-        //                         wobblingImageStartPos, wobblingImageSize, wobblingImageWobbleSpeed,
-        //                         wobblingImageWobbleAmount);
-
         string canvasName = "EndScreenCanvas";
         Color backgroundColour = new Color(0.2f, 0.2f, 0.2f);
         List<Color> playerBackgroundColours = new List<Color>() { new Color(157, 232, 242), new Color(255, 215, 0), new Color(192, 192, 192), new Color(205, 127, 50) };
-        float podiumWidth = 200;
-        Vector2 podiumBasePosition = new Vector2(0, -350);
-        float podiumScaleMultiplyer = 10.0f;
-        float podiumScaleSpeed = 50.0f;
-        float nameTextOffsetX = 0;
-        float scoreTextOffsetX = 0;
-        float textSize = 10.0f;
+        float podiumWidth = 50;
+        Vector2 podiumBasePosition = new Vector2(150, -150);
+        float spaceBetweenPodiums = 100;
+        float podiumScaleMultiplyer = 3.0f;
+        float podiumScaleSpeed = 100.0f;
+        float nameTextOffsetX = 0.3f;
+        float scoreTextOffsetX = 0.2f;
+        float podiumTextSize = 3.0f;
         Color textColour = Color.white;
         Dictionary<string, string> playerInfo = new Dictionary<string, string>();
         playerInfo.Add("Andy", "100");
@@ -317,9 +257,9 @@ public class DemoScript : MonoBehaviour
         float movingObjectMaxScale = 2.0f;
         float movingObjectScaleSpeed = 1.0f;
         string pulsatingImageTextureName = "crown";
-        Vector2 pulsatingImageStartPos = new Vector2(100, 100);
-        float pulsatingImageMinScale = 0.8f;
-        float pulsatingImageMaxScale = 1.2f;
+        Vector2 pulsatingImageSize = new Vector2(100, 100);
+        float pulsatingImageMinScale = 0.9f;
+        float pulsatingImageMaxScale = 1.5f;
         float pulsatingImagePulseSpeed = 1.0f;
         string pulsatingTextString = "Podium Leaderboard";
         float pulsatingTextSize = 30.0f;
@@ -329,29 +269,94 @@ public class DemoScript : MonoBehaviour
         float pulsatingTextMaxScale = 1.2f;
         float pulsatingTextSpeed = 1.0f;
         string wobblingImageTexture = "player";
-        Vector2 wobblingImageStartPos = new Vector2(300, 80);
+        Vector2 wobblingImageStartPos = new Vector2(500, 120);
         Vector2 wobblingImageSize = new Vector2(100, 100);
         float wobblingImageWobbleSpeed = 3.0f;
         float wobblingImageWobbleAmount = 30.0f;
 
         CanvasUIEffects.Instance.CreatePodiumLeaderboard(canvasName, backgroundColour, playerBackgroundColours,
-                                 podiumWidth, podiumBasePosition,
+                                 podiumWidth, podiumBasePosition, spaceBetweenPodiums,
                                  podiumScaleMultiplyer, podiumScaleSpeed,
-                                 nameTextOffsetX, scoreTextOffsetX, textSize, textColour,
+                                 nameTextOffsetX, scoreTextOffsetX, podiumTextSize, textColour,
                                  playerInfo, movingObjectSize, movingObjectRadius,
                                  movingObjectRotationSpeed, movingObjectMoveSpeed,
                                  movingObjectSpriteTextureString, movingObjectTextString, movingObjectTextSize,
                                  movingObjectTextColour, movingObjectDeletionTimer,
                                  canMovingObjectScale, movingObjectMaxScale,
                                  movingObjectScaleSpeed, pulsatingImageTextureName,
-                                 pulsatingImageStartPos, pulsatingImageMinScale, pulsatingImageMaxScale,
+                                 pulsatingImageSize, pulsatingImageMinScale, pulsatingImageMaxScale,
                                  pulsatingImagePulseSpeed, pulsatingTextString, pulsatingTextSize,
                                  pulsatingTextColor, pulsatingTextStartPos, pulsatingTextMinScale,
                                  pulsatingTextMaxScale, pulsatingTextSpeed, wobblingImageTexture,
                                  wobblingImageStartPos, wobblingImageSize, wobblingImageWobbleSpeed,
                                  wobblingImageWobbleAmount);
     }
+    public void CreatePodiumForSimulator()
+    {
+        string canvasName = "EndScreenCanvas";
+        Color backgroundColour = new Color(0.2f, 0.2f, 0.2f);
+        List<Color> playerBackgroundColours = new List<Color>() { new Color(157, 232, 242), new Color(255, 215, 0), new Color(192, 192, 192), new Color(205, 127, 50) };
+        float podiumWidth = 200;
+        Vector2 podiumBasePosition = new Vector2(0, -350);
+        float spaceBetweenPodiums = 250;
+        float podiumScaleMultiplyer = 10.0f;
+        float podiumScaleSpeed = 100.0f;
+        float nameTextOffsetY = 0.6f;
+        float scoreTextOffsetY = 0.4f;
+        float podiumTextSize = 10.0f;
+        Color textColour = Color.white;
+        Dictionary<string, string> playerInfo = new Dictionary<string, string>();
+        playerInfo.Add("Andy", "100");
+        playerInfo.Add("Charles", "90");
+        playerInfo.Add("Muck", "80");
+        playerInfo.Add("Stud", "70");
+        Vector2 movingObjectSize = new Vector2(150, 150);
+        float movingObjectRadius = 10.0f;
+        float movingObjectRotationSpeed = 5.0f;
+        float movingObjectMoveSpeed = 100.0f;
+        string movingObjectSpriteTextureString = "movingObjectTexture";
+        string movingObjectTextString = "Loser";
+        float movingObjectTextSize = 40.0f;
+        Color movingObjectTextColour = Color.black;
+        float movingObjectDeletionTimer = 5.0f;
+        bool canMovingObjectScale = true;
+        float movingObjectMaxScale = 2.0f;
+        float movingObjectScaleSpeed = 1.0f;
+        string pulsatingImageTextureName = "crown";
+        Vector2 pulsatingImageSize = new Vector2(250, 250);
+        float pulsatingImageMinScale = 0.8f;
+        float pulsatingImageMaxScale = 1.2f;
+        float pulsatingImagePulseSpeed = 1.0f;
+        string pulsatingTextString = "Leaderboard";
+        float pulsatingTextSize = 100;
+        Color pulsatingTextColor = new Color(1f, 0f, 0f);
+        Vector2 pulsatingTextStartPos = new Vector2(0, 800);
+        float pulsatingTextMinScale = 0.8f;
+        float pulsatingTextMaxScale = 1.2f;
+        float pulsatingTextSpeed = 1.0f;
+        string wobblingImageTexture = "player";
+        Vector2 wobblingImageStartPos = new Vector2(0, 1000);
+        Vector2 wobblingImageSize = new Vector2(250, 250);
+        float wobblingImageWobbleSpeed = 3.0f;
+        float wobblingImageWobbleAmount = 30.0f;
 
+        CanvasUIEffects.Instance.CreatePodiumLeaderboard(canvasName, backgroundColour, playerBackgroundColours,
+                                 podiumWidth, podiumBasePosition, spaceBetweenPodiums,
+                                 podiumScaleMultiplyer, podiumScaleSpeed,
+                                 nameTextOffsetY, scoreTextOffsetY, podiumTextSize, textColour,
+                                 playerInfo, movingObjectSize, movingObjectRadius,
+                                 movingObjectRotationSpeed, movingObjectMoveSpeed,
+                                 movingObjectSpriteTextureString, movingObjectTextString, movingObjectTextSize,
+                                 movingObjectTextColour, movingObjectDeletionTimer,
+                                 canMovingObjectScale, movingObjectMaxScale,
+                                 movingObjectScaleSpeed, pulsatingImageTextureName,
+                                 pulsatingImageSize, pulsatingImageMinScale, pulsatingImageMaxScale,
+                                 pulsatingImagePulseSpeed, pulsatingTextString, pulsatingTextSize,
+                                 pulsatingTextColor, pulsatingTextStartPos, pulsatingTextMinScale,
+                                 pulsatingTextMaxScale, pulsatingTextSpeed, wobblingImageTexture,
+                                 wobblingImageStartPos, wobblingImageSize, wobblingImageWobbleSpeed,
+                                 wobblingImageWobbleAmount);
+    }
     public void ShowHideButtons()
     {
         if(buttonObject.activeSelf)
