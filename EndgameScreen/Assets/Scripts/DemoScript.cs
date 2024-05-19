@@ -98,7 +98,6 @@ public class DemoScript : MonoBehaviour
 
     public void CreateLeaderboard()
     {
-
         Color backgroundColour = new Color(248, 186, 66);
         Color playerBackgroundColour = new Color(75, 72, 61);
         Vector2 playerBackgroundSize = new Vector2(70, 12);

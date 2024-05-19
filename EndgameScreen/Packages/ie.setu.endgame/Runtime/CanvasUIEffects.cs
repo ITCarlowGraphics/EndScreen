@@ -261,6 +261,8 @@ public class CanvasUIEffects : MonoBehaviour
 
         for (int i = 0; i < parentObjectsToMoveFromPointToPoint.Count; i++)
         {
+            if (parentObjectsToMoveFromPointToPoint[i] == null) { continue; }
+
             if (parentObjectsToMoveFromPointToPoint[i].currentIndex == parentObjectsToMoveFromPointToPoint[i].targetPositions.Count)
             {
                 ReduceRadiusOfMovingObject(i);
@@ -281,11 +283,13 @@ public class CanvasUIEffects : MonoBehaviour
 
         for (int i = 0; i < heightIncreaseEffects.Count; i++)
         {
+            if (heightIncreaseEffects[i] == null) { continue; }
+
             if (heightIncreaseEffects[i].isDone && !heightIncreaseEffects[i].hasTextStarted)
             {
                 heightIncreaseEffects[i].hasTextStarted = true;
 
-                CreateScalableText(heightIncreaseEffects[i].canvasName,"PlayerName",
+                CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerName",
                                 heightIncreaseEffects[i].nameString, heightIncreaseEffects[i].nameSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].namePos,
                                 5, 1, 0.5f, null);
 
@@ -517,7 +521,7 @@ public class CanvasUIEffects : MonoBehaviour
         {
             for (int i = 0; i < objectsToScale.Count; i++)
             {
-                if (objectsToScale[i].isMaxSize)
+                if (objectsToScale[i].isMaxSize || objectsToScale[i] == null)
                 {
                     continue;
                 }
@@ -651,7 +655,6 @@ public class CanvasUIEffects : MonoBehaviour
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
 
-
         textObject.transform.SetParent(canvas.transform, false);
 
         RectTransform textRectTransform = textMeshProUGUI.GetComponent<RectTransform>();
@@ -665,8 +668,10 @@ public class CanvasUIEffects : MonoBehaviour
     // Feature #4, Task ID #23
     void MoveObjectsInCircle()
     {
-        foreach (var obj in objectsToMoveInCircle)
+        foreach (ObjectToMoveInCircle obj in objectsToMoveInCircle)
         {
+            if(objectsToMoveInCircle == null) { continue; }
+
             float x = Mathf.Cos(obj.angle) * obj.radius;
             float y = Mathf.Sin(obj.angle) * obj.radius;
             Vector2 newPos = new Vector2(x, y);
@@ -680,9 +685,12 @@ public class CanvasUIEffects : MonoBehaviour
     // Feature #4, Task ID #19
     void MoveParentObjectsToNextPoint()
     {
-        foreach (var parentObject in parentObjectsToMoveFromPointToPoint)
+        foreach (ParentObjectToMoveFromPointToPoint parentObject in parentObjectsToMoveFromPointToPoint)
         {
+            if (parentObject == null) { continue; }
+            
             parentObject.MoveToNextPoint();
+            
         }
     }
 
@@ -937,6 +945,7 @@ public class CanvasUIEffects : MonoBehaviour
     {
         foreach (PulseEffect pulseEffect in pulseEffects)
         {
+            if (pulseEffect == null) { continue; }
             pulseEffect.UpdatePulse();
         }
     }
@@ -1025,8 +1034,9 @@ public class CanvasUIEffects : MonoBehaviour
     // Feature #7, task #45
     public void UpdateWobbleEffects()
     {
-        foreach (var wobbleEffect in wobbleEffects)
+        foreach (WobbleEffect wobbleEffect in wobbleEffects)
         {
+            if (wobbleEffect == null) { continue; }
             wobbleEffect.UpdateWobble();
         }
     }
@@ -1081,8 +1091,9 @@ public class CanvasUIEffects : MonoBehaviour
     // Feature #7, task #46
     public void UpdateHeightIncreaseEffects()
     {
-        foreach (var heightIncreaseEffect in heightIncreaseEffects)
+        foreach (HeightIncreaseEffect heightIncreaseEffect in heightIncreaseEffects)
         {
+            if (heightIncreaseEffect == null) { continue; }
             heightIncreaseEffect.UpdateHeight();
         }
     }

@@ -1,6 +1,6 @@
 {
   "name": "ie.setu.endgame",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "displayName": "EndgameScreen",
   "description": "Lovely Endgame Screen for when the game ends. Also has other small UI features to add to your gameto make it stand out.",
   "unity": "2021.3"
