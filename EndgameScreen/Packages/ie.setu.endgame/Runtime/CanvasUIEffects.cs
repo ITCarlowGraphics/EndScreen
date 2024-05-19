@@ -670,7 +670,10 @@ public class CanvasUIEffects : MonoBehaviour
     {
         foreach (ObjectToMoveInCircle obj in objectsToMoveInCircle)
         {
-            if(objectsToMoveInCircle == null) { continue; }
+            if (obj == null || obj.rectTransform == null)
+            {
+                continue;
+            }
 
             float x = Mathf.Cos(obj.angle) * obj.radius;
             float y = Mathf.Sin(obj.angle) * obj.radius;
