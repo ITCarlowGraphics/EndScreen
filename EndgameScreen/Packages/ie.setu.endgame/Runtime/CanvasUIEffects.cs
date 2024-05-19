@@ -211,7 +211,6 @@ public class CanvasUIEffects : MonoBehaviour
             this.scorePos = scorePos;
             this.textColour = textColour;
 
-            //this.rectTransform.pivot = new Vector2(this.rectTransform.pivot.x, 0);
         }
 
         public void UpdateHeight()
@@ -252,8 +251,8 @@ public class CanvasUIEffects : MonoBehaviour
 
     public void Update()
     {
-        IncreaseObjectSize();
-        MoveParentObjectsToNextPoint();
+        UpdateObjectsToScale();
+        UpdateParentObjectsToMove();
         MoveObjectsInCircle();
         UpdatePulseEffects();
         UpdateWobbleEffects();
@@ -515,13 +514,13 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Function for increasing object size
     // Feature #1, Task ID #12
-    void IncreaseObjectSize()
+    void UpdateObjectsToScale()
     {
         if (objectsToScale.Count > 0)
         {
             for (int i = 0; i < objectsToScale.Count; i++)
             {
-                if (objectsToScale[i].isMaxSize || objectsToScale[i] == null)
+                if (objectsToScale[i].isMaxSize || objectsToScale[i] == null || objectsToScale[i].rectTransform == null || objectsToScale[i].rectTransform.gameObject == null)
                 {
                     continue;
                 }
@@ -670,7 +669,7 @@ public class CanvasUIEffects : MonoBehaviour
     {
         foreach (ObjectToMoveInCircle obj in objectsToMoveInCircle)
         {
-            if (obj == null || obj.rectTransform == null)
+            if (obj == null || obj.rectTransform == null || obj.rectTransform.gameObject == null)
             {
                 continue;
             }
@@ -686,12 +685,15 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Feature #4, Task ID #19
-    void MoveParentObjectsToNextPoint()
+    void UpdateParentObjectsToMove()
     {
         foreach (ParentObjectToMoveFromPointToPoint parentObject in parentObjectsToMoveFromPointToPoint)
         {
-            if (parentObject == null) { continue; }
-            
+            if (parentObject == null || parentObject.rectTransform == null || parentObject.rectTransform.gameObject == null)
+            {
+                continue;
+            }
+
             parentObject.MoveToNextPoint();
             
         }
@@ -767,22 +769,6 @@ public class CanvasUIEffects : MonoBehaviour
         float b = colourToFix.b > 1 ? colourToFix.b / 255f : colourToFix.b;
 
         return new Color(r, g, b);
-    }
-
-    // Feature #1, Task ID #7
-    public void DeleteEndScreenCanvas(string canvasName)
-    {
-        GameObject existingCanvas = GameObject.Find(canvasName);
-        if (existingCanvas != null && existingCanvas.gameObject.name == canvasName)
-        {
-            Destroy(existingCanvas);
-            objectsToScale.Clear();
-            parentObjectsToMoveFromPointToPoint.Clear();
-            objectsToMoveInCircle.Clear();
-            pulseEffects.Clear();
-            wobbleEffects.Clear();
-            heightIncreaseEffects.Clear();
-        }
     }
 
     // Creates entire end game screen
@@ -948,7 +934,10 @@ public class CanvasUIEffects : MonoBehaviour
     {
         foreach (PulseEffect pulseEffect in pulseEffects)
         {
-            if (pulseEffect == null) { continue; }
+            if (pulseEffect == null || pulseEffect.rectTransform == null || pulseEffect.rectTransform.gameObject == null)
+            {
+                continue;
+            }
             pulseEffect.UpdatePulse();
         }
     }
@@ -1039,7 +1028,10 @@ public class CanvasUIEffects : MonoBehaviour
     {
         foreach (WobbleEffect wobbleEffect in wobbleEffects)
         {
-            if (wobbleEffect == null) { continue; }
+            if (wobbleEffect == null || wobbleEffect.rectTransform == null || wobbleEffect.rectTransform.gameObject == null)
+            {
+                continue;
+            }
             wobbleEffect.UpdateWobble();
         }
     }
@@ -1096,7 +1088,10 @@ public class CanvasUIEffects : MonoBehaviour
     {
         foreach (HeightIncreaseEffect heightIncreaseEffect in heightIncreaseEffects)
         {
-            if (heightIncreaseEffect == null) { continue; }
+            if (heightIncreaseEffect == null || heightIncreaseEffect.rectTransform == null || heightIncreaseEffect.rectTransform.gameObject == null)
+            {
+                continue;
+            }
             heightIncreaseEffect.UpdateHeight();
         }
     }
@@ -1256,5 +1251,22 @@ public class CanvasUIEffects : MonoBehaviour
         }
 
         return positions;
+    }
+
+    // Feature #1, Task ID #7
+    public void DeleteEndScreenCanvas(string canvasName)
+    {
+        GameObject existingCanvas = GameObject.Find(canvasName);
+        if (existingCanvas != null && existingCanvas.gameObject.name == canvasName)
+        {
+            Destroy(existingCanvas);
+
+            objectsToScale.Clear();
+            parentObjectsToMoveFromPointToPoint.Clear();
+            objectsToMoveInCircle.Clear();
+            pulseEffects.Clear();
+            wobbleEffects.Clear();
+            heightIncreaseEffects.Clear();
+        }
     }
 }
