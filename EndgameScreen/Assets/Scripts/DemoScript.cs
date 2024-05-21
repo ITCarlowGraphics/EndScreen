@@ -40,7 +40,7 @@ public class DemoScript : MonoBehaviour
 
     public void CreateScalingText()
     {
-        CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name", "Andy Chuggler", 3, Color.green, new Vector2(0,0), 20, 2, 0.5f, null);
+        CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name", "Andy Chuggler", "rocketfont", 3, Color.green, new Vector2(0,0), 20, 2, 0.5f, null);
     }
     public void CreateMovingImage()
     {
@@ -76,7 +76,7 @@ public class DemoScript : MonoBehaviour
             new (200, -200),
         };
 
-        CanvasUIEffects.Instance.CreateMovingObjectWithText("EndScreenCanvas", new Vector2(60, 60), 20, 3, 70, positionPoints, "player", "Big Ones", 10, Color.magenta, 5, null, false, 0, 0);
+        CanvasUIEffects.Instance.CreateMovingObjectWithText("EndScreenCanvas", new Vector2(60, 60), 20, 3, 70, positionPoints, "player", "Big Ones", 10, "", Color.magenta, 5, null, false, 0, 0);
     }
 
     public void CreatePulsatingImage()
@@ -87,7 +87,7 @@ public class DemoScript : MonoBehaviour
 
     public void CreatePulsatingText()
     {
-        CanvasUIEffects.Instance.CreatePulseEffectTextObject("EndScreenCanvas", "PulseText", "Pulse Time", 10, Color.blue,
+        CanvasUIEffects.Instance.CreatePulseEffectTextObject("EndScreenCanvas", "PulseText", "Pulse Time", "", 10, Color.blue,
                                       new Vector2(0, 200), 0.5f, 2.5f, 1, null);
     }
 
@@ -108,6 +108,7 @@ public class DemoScript : MonoBehaviour
         float backgroundMaxScale = 5;
         float backgroundScaleSpeed = 3;
 
+        string textFont = "";
         float textSize = 7;
         float textMaxScale = 5;
 
@@ -152,9 +153,9 @@ public class DemoScript : MonoBehaviour
 
         CanvasUIEffects.Instance.CreateLeaderboard("EndScreenCanvas", backgroundColour, "Leaderboard", 10, 3, playerBackgroundColour,
                                                  playerBackgroundSize, topOfLeaderBoardPosition, spaceBetweenPlayerBackground,
-                                                 backgroundMaxScale, backgroundScaleSpeed, 0, 0, textSize, textMaxScale, Color.white, playerInfo,
+                                                 backgroundMaxScale, backgroundScaleSpeed, 0, 0, textSize, textMaxScale, textFont, Color.white, playerInfo,
                                                  movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed,
-                                                 movingObjectPositionPoints, "crown", "", 0, Color.white, 5, true, 5, 1,
+                                                 movingObjectPositionPoints, "crown", "", 0,  Color.white, 5, true, 5, 1,
                                                  pulsatingImageTextureName, pulsatingImageStartPos, pulsatingImageSize,
                                                  pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed,
                                                  pulsatingTextString, pulsatingTextSize, pulsatingTextColor, pulsatingTextStartPos,
@@ -176,6 +177,7 @@ public class DemoScript : MonoBehaviour
         float backgroundMaxScale = 10;
         float backgroundScaleSpeed = 3;
 
+        string textFont = "";
         float textSize = 7;
         float textMaxScale = 16;
 
@@ -213,7 +215,7 @@ public class DemoScript : MonoBehaviour
 
         CanvasUIEffects.Instance.CreateLeaderboard("EndScreenCanvas", backgroundColour, "Leaderboard", 10, 4, playerBackgroundColour,
                                                  playerBackgroundSize, topOfLeaderBoardPosition, spaceBetweenPlayerBackground,
-                                                 backgroundMaxScale, backgroundScaleSpeed, 0, 0, textSize, textMaxScale, Color.white, playerInfo,
+                                                 backgroundMaxScale, backgroundScaleSpeed, 0, 0, textSize, textMaxScale, textFont, Color.white, playerInfo,
                                                  movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed,
                                                  movingObjectPositionPoints, "crown", "", 0, Color.white, 5, true, 5, 1,
                                                  pulsatingImageTextureName, pulsatingImageStartPos, pulsatingImageSize,
@@ -276,7 +278,7 @@ public class DemoScript : MonoBehaviour
         CanvasUIEffects.Instance.CreatePodiumLeaderboard(canvasName, backgroundColour, playerBackgroundColours,
                                  podiumWidth, podiumBasePosition, spaceBetweenPodiums,
                                  podiumScaleMultiplyer, podiumScaleSpeed,
-                                 nameTextOffsetX, scoreTextOffsetX, podiumTextSize, textColour,
+                                 nameTextOffsetX, scoreTextOffsetX, podiumTextSize, "", textColour,
                                  playerInfo, movingObjectSize, movingObjectRadius,
                                  movingObjectRotationSpeed, movingObjectMoveSpeed,
                                  movingObjectSpriteTextureString, movingObjectTextString, movingObjectTextSize,
@@ -342,7 +344,7 @@ public class DemoScript : MonoBehaviour
         CanvasUIEffects.Instance.CreatePodiumLeaderboard(canvasName, backgroundColour, playerBackgroundColours,
                                  podiumWidth, podiumBasePosition, spaceBetweenPodiums,
                                  podiumScaleMultiplyer, podiumScaleSpeed,
-                                 nameTextOffsetY, scoreTextOffsetY, podiumTextSize, textColour,
+                                 nameTextOffsetY, scoreTextOffsetY, podiumTextSize, "", textColour,
                                  playerInfo, movingObjectSize, movingObjectRadius,
                                  movingObjectRotationSpeed, movingObjectMoveSpeed,
                                  movingObjectSpriteTextureString, movingObjectTextString, movingObjectTextSize,
@@ -371,5 +373,84 @@ public class DemoScript : MonoBehaviour
     {
         CanvasUIEffects.Instance.DeleteEndScreenCanvas("EndScreenCanvas");
     }
+
+    public void RocketLeagueDemo()
+    {
+        List<Vector2> imagePos = new List<Vector2>{new Vector2(0, 220)};
+        List<Vector2> textPos = new List<Vector2>{new Vector2(22, 200)};
+        List<Vector2> scorePos = new List<Vector2>{new Vector2(22, 180)};
+
+        float textMaxScale = 7;
+        CanvasUIEffects.Instance.CreateMovingObject("EndScreenCanvas", new Vector2(50, 50), 0, 0, 0, imagePos, "rocket", 2, null, true, 3, 5);
+
+        CanvasUIEffects.Instance.CreateMovingText("EndScreenCanvas", "RocketText", "GOOD SHOT", 3, "rocketfont",
+                                                   new Color(255, 254, 151), 0, 0, 0, textPos,
+                                                   2, null, true, textMaxScale, 10);
+
+        CanvasUIEffects.Instance.CreateMovingText("EndScreenCanvas", "RocketText", "+20", 3, "rocketfont",
+                                                   new Color(255, 254, 151), 0, 0, 0, scorePos,
+                                                   2, null, true, textMaxScale, 10);
+
+    }
+
+    public void BatmanDemo()
+    {
+        StartCoroutine(Batman());
+    }
+
+
+    IEnumerator Batman()
+    {
+        CanvasUIEffects.Instance.CreateImageOnCanvas("EndScreenCanvas", 
+            new Vector2(350, 200), new Vector2(0, 0), 1, 0, Color.black, null);
+
+        yield return new WaitForSeconds(1);
+
+        string[] rounds = 
+            { "Round 1", "8390", "Round 2", "12635", "Round 3", "21465" };
+        Vector2[] roundPositions = 
+            { new Vector2(-165, 75), new Vector2(165, 75), new Vector2(-165, 55),
+            new Vector2(165, 55), new Vector2(-165, 35), new Vector2(165, 35) };
+
+        for (int i = 0; i < rounds.Length; i += 2)
+        {
+            CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name",
+                rounds[i], "batman", 30, Color.white, roundPositions[i], 0.5f, 1, 0, null);
+            yield return new WaitForSeconds(0.3f);
+            CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name",
+                rounds[i + 1], "batman", 30, Color.white, roundPositions[i + 1], 0.5f, 1, 1, null);
+            yield return new WaitForSeconds(1);
+        }
+
+        string[] bonuses = 
+        {
+                "Base Score", "13965",
+                "Variation Bonus x 9", "4000",
+                "Gadget Variation Bonus x 5", "2000",
+                "Perfect Round Bonus", "500",
+                "Perfect Round Bonus", "500",
+                "Flawless Freeflow Bonus", "1000"
+         };
+        Vector2[] bonusPositions = 
+        {
+                new Vector2(-150, 15), new Vector2(150, 15),
+                new Vector2(-150, -5), new Vector2(150, -5),
+                new Vector2(-150, -25), new Vector2(150, -25),
+                new Vector2(-150, -45), new Vector2(150, -45),
+                new Vector2(-150, -65), new Vector2(150, -65),
+                new Vector2(-150, -85), new Vector2(150, -85)
+        };
+
+        for (int i = 0; i < bonuses.Length; i += 2)
+        {
+            CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name", bonuses[i], 
+                "", 27, Color.white, bonusPositions[i], 0.5f, 1, 0, null);
+            yield return new WaitForSeconds(0.3f);
+            CanvasUIEffects.Instance.CreateScalableText("EndScreenCanvas", "Name", bonuses[i + 1],
+                "", 27, Color.white, bonusPositions[i + 1], 0.5f, 1, 1, null);
+            yield return new WaitForSeconds(1);
+        }
+    }
+
 }
 

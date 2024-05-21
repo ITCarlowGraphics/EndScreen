@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 using static CanvasUIEffects;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class CanvasUIEffects : MonoBehaviour
 {
@@ -288,13 +289,13 @@ public class CanvasUIEffects : MonoBehaviour
             {
                 heightIncreaseEffects[i].hasTextStarted = true;
 
-                CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerName",
-                                heightIncreaseEffects[i].nameString, heightIncreaseEffects[i].nameSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].namePos,
-                                5, 1, 0.5f, null);
+                CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerName", heightIncreaseEffects[i].nameString, "",
+                                    heightIncreaseEffects[i].nameSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].namePos,
+                                    5, 1, 0.5f, null);
 
-                CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerScore",
-                           heightIncreaseEffects[i].scoreString, heightIncreaseEffects[i].scoreSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].scorePos,
-                           5, 1, 0.5f, null);
+                CreateScalableText(heightIncreaseEffects[i].canvasName, "PlayerScore", heightIncreaseEffects[i].scoreString, "",
+                                    heightIncreaseEffects[i].scoreSize, heightIncreaseEffects[i].textColour, heightIncreaseEffects[i].scorePos,
+                                    5, 1, 0.5f, null);
             }
         }
     }
@@ -465,12 +466,15 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates text that scales on the canvas
     // Feature #1, Task ID #15
-    public void CreateScalableText(string canvasName, string textName, string textString, float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, float xPivot, Transform parent)
+    public void CreateScalableText(string canvasName, string textName, string textString, string textFont,
+        float textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, float xPivot, Transform parent)
     {
         CreateCanvas(canvasName);
 
         GameObject textObject = new GameObject(textName);
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
+        TMP_FontAsset loadedFont = Resources.Load<TMP_FontAsset>(textFont);
+
 
         textMeshProUGUI.text = textString;
         textMeshProUGUI.fontSize = textSize;
@@ -478,6 +482,10 @@ public class CanvasUIEffects : MonoBehaviour
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
 
+        if(loadedFont != null)
+        {
+            textMeshProUGUI.font = loadedFont;
+        }
 
 
         if (parent != null)
@@ -520,17 +528,37 @@ public class CanvasUIEffects : MonoBehaviour
         {
             for (int i = 0; i < objectsToScale.Count; i++)
             {
-                if (objectsToScale[i].isMaxSize || objectsToScale[i] == null || objectsToScale[i].rectTransform == null || objectsToScale[i].rectTransform.gameObject == null)
+                if (objectsToScale[i] == null || objectsToScale[i].rectTransform == null || objectsToScale[i].rectTransform.gameObject == null)
                 {
                     continue;
                 }
-               
-                if(objectsToScale[i].rectTransform != null)
-                {  
-                    if (objectsToScale[i].rectTransform.localScale.x >= objectsToScale[i].maxScale)
+
+                float currentScale = objectsToScale[i].rectTransform.localScale.x;
+                float targetScale = objectsToScale[i].maxScale;
+
+                if (objectsToScale[i].isMaxSize)
+                {
+                    continue;
+                }
+
+                if (targetScale < 1.0f)
+                {
+                    if (currentScale <= targetScale)
                     {
                         objectsToScale[i].isMaxSize = true;
-                        objectsToScale[i].rectTransform.localScale = new Vector3(objectsToScale[i].maxScale, objectsToScale[i].maxScale, 1f);
+                        objectsToScale[i].rectTransform.localScale = new Vector3(targetScale, targetScale, 1f);
+                    }
+                    else
+                    {
+                        objectsToScale[i].rectTransform.localScale -= Vector3.one * Time.deltaTime * objectsToScale[i].speed;
+                    }
+                }
+                else
+                {
+                    if (currentScale >= targetScale)
+                    {
+                        objectsToScale[i].isMaxSize = true;
+                        objectsToScale[i].rectTransform.localScale = new Vector3(targetScale, targetScale, 1f);
                     }
                     else
                     {
@@ -540,6 +568,7 @@ public class CanvasUIEffects : MonoBehaviour
             }
         }
     }
+
 
     //
     // Moving Object
@@ -588,12 +617,15 @@ public class CanvasUIEffects : MonoBehaviour
     // Creates object that moves in a circle around a set point with text
     // Feature #4, Task ID #21
     public void CreateMovingObjectWithText(string canvasName, Vector2 size, float radius, float rotationSpeed, float moveSpeed, List<Vector2> list, 
-        string spriteName, string textString, float textSize, Color textColor, float deleteTimer, Transform parent, bool scaleObject, float maxScale, float scaleSpeed)
+        string spriteName, string textString, float textSize, string textFont, Color textColor, float deleteTimer, Transform parent, bool scaleObject, float maxScale, float scaleSpeed)
     {
         CreateCanvas(canvasName);
 
         GameObject parentObj = new GameObject("MovingParent");
         RectTransform parentRectTransform = parentObj.AddComponent<RectTransform>();
+        TMP_FontAsset loadedFont = Resources.Load<TMP_FontAsset>(textFont);
+
+
         if (parent != null)
         {
             parentObj.transform.SetParent(parent, false);
@@ -631,6 +663,11 @@ public class CanvasUIEffects : MonoBehaviour
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Center;
 
+        if (loadedFont != null)
+        {
+            textMeshProUGUI.font = loadedFont;
+        }
+
         RectTransform textRectTransform = textMeshProUGUI.rectTransform;
         textRectTransform.anchorMin = Vector2.zero;
         textRectTransform.anchorMax = Vector2.one;
@@ -643,25 +680,61 @@ public class CanvasUIEffects : MonoBehaviour
 
     // Creates text that goes with the moving object
     // Feature #4, Task ID #22
-    public void CreateCircularMovingText(string textName, string textString, int textSize, Color colour, Vector2 startPos, float targetScale, float scaleSpeed, Transform parent)
+
+
+    public void CreateMovingText(string canvasName, string textName, string textString, int textSize, string textFont, Color colour,
+                             float radius, float rotationSpeed, float moveSpeed, List<Vector2> movingPositions,
+                             float deleteTimer, Transform parent, bool scaleObject, float maxScale, float scaleSpeed)
     {
+        CreateCanvas(canvasName);
+
+        GameObject parentObj = new GameObject("MovingParent");
+        RectTransform parentRectTransform = parentObj.AddComponent<RectTransform>();
+
+        TMP_FontAsset loadedFont = Resources.Load<TMP_FontAsset>(textFont);
+
+        if (parent != null)
+        {
+            parentObj.transform.SetParent(parent, false);
+        }
+        else
+        {
+            if (GetCanvas(canvasName) != null)
+            {
+                parentObj.transform.SetParent(GetCanvas(canvasName).transform, false);
+            }
+        }
+
+        ParentObjectToMoveFromPointToPoint parentObjectToMove = new ParentObjectToMoveFromPointToPoint(parentRectTransform, moveSpeed, movingPositions);
+        parentObjectToMove.rectTransform.localPosition = parentObjectToMove.currentPosition;
+
+        parentObjectsToMoveFromPointToPoint.Add(parentObjectToMove);
+
         GameObject textObject = new GameObject(textName);
+        RectTransform textRectTransform = textObject.AddComponent<RectTransform>();
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
+        textObject.transform.SetParent(parentObj.transform, false);
 
         textMeshProUGUI.text = textString;
         textMeshProUGUI.fontSize = textSize;
         textMeshProUGUI.color = FixRGBColour(colour);
         textMeshProUGUI.fontStyle = FontStyles.Bold;
-        textMeshProUGUI.alignment = TextAlignmentOptions.Left;
+        textMeshProUGUI.alignment = TextAlignmentOptions.Center;
 
-        textObject.transform.SetParent(canvas.transform, false);
+        if (loadedFont != null)
+        {
+            textMeshProUGUI.font = loadedFont;
+        }
 
-        RectTransform textRectTransform = textMeshProUGUI.GetComponent<RectTransform>();
+        textRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        textRectTransform.pivot = new Vector2(0.5f, 0.5f);
         textRectTransform.sizeDelta = new Vector2(textMeshProUGUI.preferredWidth, textSize);
-        textRectTransform.localPosition = new Vector2(startPos.x, startPos.y);
+        textRectTransform.anchoredPosition = Vector2.zero;
 
-        CreateObjectToScale(targetScale, scaleSpeed, textRectTransform);
+        ObjectToMoveInCircle objectToMove = new ObjectToMoveInCircle(textRectTransform, radius, rotationSpeed, deleteTimer, scaleObject, maxScale, scaleSpeed);
+        objectsToMoveInCircle.Add(objectToMove);
     }
+
 
     // Function for moving the object in a circle
     // Feature #4, Task ID #23
@@ -737,7 +810,11 @@ public class CanvasUIEffects : MonoBehaviour
             float alphaDecreaseRate = 1 / objectsToMoveInCircle[index].timer;
             Image image = objectsToMoveInCircle[index].rectTransform.GetComponent<Image>();
             TextMeshProUGUI text = objectsToMoveInCircle[index].rectTransform.GetComponentInChildren<TextMeshProUGUI>();
-            image.color = new Color(image.color.r, image.color.g, image.color.b, image.color.a - (alphaDecreaseRate * 2) * Time.deltaTime);
+
+            if (image != null)
+            {
+                image.color = new Color(image.color.r, image.color.g, image.color.b, image.color.a - (alphaDecreaseRate * 2) * Time.deltaTime);
+            }
 
             if (text != null)
             {
@@ -787,6 +864,7 @@ public class CanvasUIEffects : MonoBehaviour
         float scoreTextOffsetX,
         float textSize,
         float textMaxScale,
+        string textFont,
         Color textColour,
         Dictionary<string, string> playerInfo,
         Vector2 movingObjectSize,
@@ -840,6 +918,7 @@ public class CanvasUIEffects : MonoBehaviour
         CreateScalableText(canvasName,
                 "Title",
                 titleTextString,
+                textFont,
                 titleTextSize,
                 FixRGBColour(textColour),
                 new Vector2(0, topOfLeaderBoardPosition.y + ((playerBackgroundSize.y * playerBackgroundMaxScale) * titleTextYOffset)),
@@ -882,6 +961,7 @@ public class CanvasUIEffects : MonoBehaviour
             CreateScalableText(canvasName,
                 "Player" + (i + 1).ToString() + "Name",
                 playerNames[i],
+                textFont,
                 newTextSize,
                 FixRGBColour(textColour),
                 new Vector2(nameTextX + nameTextOffsetX, currentPos.y),
@@ -898,7 +978,8 @@ public class CanvasUIEffects : MonoBehaviour
             CreateScalableText(canvasName,
                 "Player" + (i + 1).ToString() + "Score",
                     playerScores[i],
-                    newTextSize ,
+                    textFont,
+                    newTextSize,
                     FixRGBColour(textColour),
                     new Vector2(scoreTextX + scoreTextOffsetX, currentPos.y),
                     textMaxScale,
@@ -909,7 +990,7 @@ public class CanvasUIEffects : MonoBehaviour
 
         // Feature #5, Task ID #36
         CreateMovingObjectWithText(canvasName, movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, movingObjectPositions, 
-                                    movingObjectSpriteTextureString,movingObjectTextString, movingObjectTextSize, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, 
+                                    movingObjectSpriteTextureString,movingObjectTextString, movingObjectTextSize, textFont, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, 
                                     leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
 
         CreateWobbleEffectImage(canvasName, "WobblingImage", wobblingImageTexture, wobblingImageStartPos, wobblingImageSize,
@@ -918,7 +999,7 @@ public class CanvasUIEffects : MonoBehaviour
         CreatePulseEffectImage(canvasName, "PulsingImage", pulsatingImageTextureName, pulsatingImageStartPos, pulsatingImageSize,
                                pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed, leaderboard.transform);
 
-        CreatePulseEffectTextObject(canvasName, "PulsingText", pulsatingTextString, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
+        CreatePulseEffectTextObject(canvasName, "PulsingText", pulsatingTextString, textFont, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
                                       pulsatingTextStartPos, pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed, leaderboard.transform);
     }
 
@@ -943,7 +1024,7 @@ public class CanvasUIEffects : MonoBehaviour
     }
 
     // Feature #7, task #42
-    public void CreatePulseEffectTextObject(string canvasName, string textName, string textString, 
+    public void CreatePulseEffectTextObject(string canvasName, string textName, string textString, string textFont, 
         float textSize, Color colour, Vector2 startPos, float minScale, float maxScale, float pulseSpeed, Transform parent)
     {
         CreateCanvas(canvasName);
@@ -951,12 +1032,18 @@ public class CanvasUIEffects : MonoBehaviour
         GameObject textObject = new GameObject(textName);
 
         TextMeshProUGUI textMeshProUGUI = textObject.AddComponent<TextMeshProUGUI>();
+        TMP_FontAsset loadedFont = Resources.Load<TMP_FontAsset>(textFont);
 
         textMeshProUGUI.text = textString;
         textMeshProUGUI.fontSize = textSize;
         textMeshProUGUI.color = FixRGBColour(colour);
         textMeshProUGUI.fontStyle = FontStyles.Bold;
         textMeshProUGUI.alignment = TextAlignmentOptions.Left;
+
+        if (loadedFont != null)
+        {
+            textMeshProUGUI.font = loadedFont;
+        }
 
         if (parent != null)
         {
@@ -1140,6 +1227,7 @@ public class CanvasUIEffects : MonoBehaviour
     float nameTextOffsetY,
     float scoreTextOffsetY,
     float textSize,
+    string textFont,
     Color textColour,
     Dictionary<string, string> playerInfo,
     Vector2 movingObjectSize,
@@ -1210,7 +1298,7 @@ public class CanvasUIEffects : MonoBehaviour
         }
 
         CreateMovingObjectWithText(canvasName, movingObjectSize, movingObjectRadius, movingObjectRotationSpeed, movingObjectMoveSpeed, newMovingObjectPositions, movingObjectSpriteTextureString,
-            movingObjectTextString, movingObjectTextSize, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
+            movingObjectTextString, movingObjectTextSize, textFont, FixRGBColour(movingObjectTextColour), movingObjectDeletionTimer, leaderboard.transform, canMovingObjectScale, movingObjectMaxScale, movingObjectScaleSpeed);
 
         Vector2 newPulsatingImagePos = new Vector2(podiumPositions[0].x + (podiumWidth / 2),
                 (podiumPositions[0].y + (podiumScaleMultiplyer * int.Parse(playerScores[0]))) - pulsatingImageSize.y * 0.1f);
@@ -1218,7 +1306,7 @@ public class CanvasUIEffects : MonoBehaviour
         CreatePulseEffectImage(canvasName, "PulsingImage", pulsatingImageTextureName, newPulsatingImagePos, pulsatingImageSize,
                                pulsatingImageMinScale, pulsatingImageMaxScale, pulsatingImagePulseSpeed, leaderboard.transform);
 
-        CreatePulseEffectTextObject(canvasName, "Podium Leaderboard Text", pulsatingTextString, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
+        CreatePulseEffectTextObject(canvasName, "Podium Leaderboard Text", pulsatingTextString, textFont, pulsatingTextSize, FixRGBColour(pulsatingTextColor),
                                       pulsatingTextStartPos, pulsatingTextMinScale, pulsatingTextMaxScale, pulsatingTextSpeed, leaderboard.transform);
 
         CreateWobbleEffectImage(canvasName, "WobblingImage", wobblingImageTexture, wobblingImageStartPos, wobblingImageSize,
