@@ -116,9 +116,9 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {
+        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.director": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
-        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.particlesystem": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -143,10 +143,11 @@
       "url": "https://packages.unity.com"
     },
     "ie.setu.endgame": {
-      "version": "file:ie.setu.endgame",
+      "version": "https://github.com/ITCarlowGraphics/EndScreen.git?path=/EndgameScreen/Packages/ie.setu.endgame#8.0.5",
       "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
+      "source": "git",
+      "dependencies": {},
+      "hash": "28cc1ab514683e03357282893e4f6f0527a830f6"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
